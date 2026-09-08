@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Math Sprint - Fast Mental Math Practice</title>
+    
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <meta name="description" content="Fast single-digit mental math addition and subtraction training web app.">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Math Sprint">
+    <link rel="manifest" href='data:application/json,{"name":"Math Sprint","short_name":"MathSprint","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#6366f1","icons":[{"src":"https://img.icons8.com/color/192/000000/calculator.png","sizes":"192x192","type":"image/png"}]}'>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eep2ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        /* Glassmorphism elements */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Circular progress transition */
+        .timer-circle {
+            transition: stroke-dashoffset 0.1s linear, stroke 0.3s ease;
+        }
+
+        /* Prevent spin buttons on number input */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Shake animation on wrong input */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .animate-shake {
+            animation: shake 0.35s ease-in-out;
+        }
+
+        /* Glow pulse for active state */
+        .glow-indigo {
+            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.5);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.5);
+        }
+        .glow-rose {
+            box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.5);
+        }
+
+        /* Dynamic canvas background */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="h-full overflow-x-hidden text-slate-100 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+    <!-- Particle Background Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="relative z-10 flex flex-col min-h-screen max-w-2xl mx-auto w-full px-4 py-4 sm:py-6 justify-between">
+        
+        <!-- TOP HEADER BAR -->
+        <header class="glass-panel rounded-2xl px-4 py-3 flex items-center justify-between shadow-xl">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-bolt text-lg text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-lg leading-none tracking-tight">Math Sprint</h1>
+                    <span id="modeBadge" class="text-xs text-indigo-400 font-medium">Addition Sprint</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Sound Toggle -->
+                <button id="soundBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center">
+                    <i id="soundIcon" class="fa-solid fa-volume-high text-sm"></i>
+                </button>
+
+                <!-- Settings Modal Trigger -->
+                <button id="settingsBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center">
+                    <i class="fa-solid fa-gear text-sm"></i>
+                </button>
+
+                <!-- Help / Info Modal Trigger -->
+                <button id="helpBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center">
+                    <i class="fa-solid fa-circle-question text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN GAMEPLAY AREA -->
+        <main class="my-auto py-4 flex flex-col items-center">
+            
+            <!-- START / HOME SCREEN VIEW -->
+            <div id="startView" class="w-full flex flex-col items-center space-y-6 text-center">
+                <div class="space-y-2 max-w-md">
+                    <span class="inline-block px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold tracking-wide uppercase">
+                        Fast Mental Arithmetic
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+                        Master Speed Calculations
+                    </h2>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Start from origin, continuously apply single-digit operations (+0 to +9 or -0 to -9) in your head, and type the resulting sum directly!
+                    </p>
+                </div>
+
+                <!-- Mode Selection Buttons -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
+                    <button id="selectAddMode" class="glass-card p-4 rounded-2xl text-left border border-indigo-500/30 hover:border-indigo-500 transition group hover:scale-[1.02] active:scale-[0.98] glow-indigo">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                                <i class="fa-solid fa-plus text-sm"></i>
+                            </div>
+                            <span class="text-xs font-bold text-emerald-400">0 &rarr; 100</span>
+                        </div>
+                        <h3 class="font-bold text-white text-base group-hover:text-indigo-300 transition">Addition Sprint</h3>
+                        <p class="text-xs text-slate-400 mt-1">Start at 0, add single digits repeatedly until target > 100.</p>
+                    </button>
+
+                    <button id="selectSubMode" class="glass-card p-4 rounded-2xl text-left border border-indigo-500/30 hover:border-indigo-500 transition group hover:scale-[1.02] active:scale-[0.98]">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                                <i class="fa-solid fa-minus text-sm"></i>
+                            </div>
+                            <span class="text-xs font-bold text-rose-400">100 &rarr; 0</span>
+                        </div>
+                        <h3 class="font-bold text-white text-base group-hover:text-indigo-300 transition">Subtraction Sprint</h3>
+                        <p class="text-xs text-slate-400 mt-1">Start at 100, subtract single digits repeatedly down to 0.</p>
+                    </button>
+                </div>
+
+                <!-- Game Options & Difficulty Quick Select -->
+                <div class="glass-panel p-4 rounded-2xl w-full max-w-md space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-300">Countdown Limit / Speed</span>
+                        <span id="speedLabel" class="text-xs font-bold text-indigo-400">Medium (5s)</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button class="speed-opt py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="8" data-label="Easy (8s)">Easy</button>
+                        <button class="speed-opt py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow" data-speed="5" data-label="Medium (5s)">Medium</button>
+                        <button class="speed-opt py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="3" data-label="Hard (3s)">Hard</button>
+                        <button class="speed-opt py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="0" data-label="Zen (No Timer)">Zen</button>
+                    </div>
+                </div>
+
+                <!-- Big Start Game Button -->
+                <button id="startSprintBtn" class="w-full max-w-md py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-lg shadow-lg shadow-indigo-500/40 hover:shadow-indigo-500/60 hover:scale-[1.01] active:scale-[0.99] transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>START SPRINT</span>
+                </button>
+
+                <!-- High Score & Stats Preview -->
+                <div class="flex justify-center space-x-6 text-xs text-slate-400">
+                    <div>Best Time (+): <span id="bestAddStats" class="font-bold text-slate-200">--</span></div>
+                    <div>Best Time (-): <span id="bestSubStats" class="font-bold text-slate-200">--</span></div>
+                </div>
+            </div>
+
+            <!-- ACTIVE GAME VIEW -->
+            <div id="gameView" class="w-full flex flex-col items-center hidden space-y-4">
+                
+                <!-- TOP HUD: SCORE, TIMER, STREAK -->
+                <div class="w-full flex items-center justify-between glass-panel rounded-2xl px-5 py-3">
+                    <!-- Progress & Target Info -->
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Progress Target</span>
+                        <div class="flex items-center space-x-2">
+                            <span id="progressText" class="text-sm font-extrabold text-white">0 / 100</span>
+                            <span id="streakBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                                🔥 <span id="streakCount">0</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- CIRCULAR COUNTDOWN TIMER RING -->
+                    <div id="timerContainer" class="relative w-14 h-14 flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <!-- Background Circle -->
+                            <path
+                                class="text-slate-800"
+                                stroke-width="3.5"
+                                stroke="currentColor"
+                                fill="none"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                            <!-- Progress Ring Circle -->
+                            <path
+                                id="timerCircle"
+                                class="timer-circle text-indigo-500"
+                                stroke-dasharray="100, 100"
+                                stroke-dashoffset="0"
+                                stroke-width="3.5"
+                                stroke-linecap="round"
+                                stroke="currentColor"
+                                fill="none"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                        </svg>
+                        <span id="timerText" class="absolute text-xs font-black font-mono text-white">5.0</span>
+                    </div>
+
+                    <!-- Stop / Reset Button -->
+                    <button id="quitGameBtn" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 rounded-xl text-xs font-semibold transition">
+                        Reset
+                    </button>
+                </div>
+
+                <!-- MAIN DISPLAY CARD -->
+                <div id="mainDisplayCard" class="w-full glass-card rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center shadow-2xl transition-all duration-200">
+                    
+                    <span class="text-xs uppercase tracking-widest font-bold text-indigo-400 mb-1">
+                        Current Running Total
+                    </span>
+
+                    <!-- Whole Current Number Display (BOLD TOP NUMBER) -->
+                    <div id="currentTotalDisplay" class="text-6xl sm:text-7xl font-black tracking-tight text-white font-mono my-2 drop-shadow-md">
+                        0
+                    </div>
+
+                    <!-- Subheading Task Display (e.g. + 6 or - 3) -->
+                    <div id="taskDisplayContainer" class="mt-2 px-5 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center space-x-2">
+                        <span class="text-slate-400 font-semibold text-sm">Task:</span>
+                        <span id="taskSubheading" class="text-xl sm:text-2xl font-black text-indigo-300 font-mono tracking-wide">
+                            ADD 6
+                        </span>
+                    </div>
+                </div>
+
+                <!-- INPUT SECTION -->
+                <div class="w-full space-y-3">
+                    <form id="answerForm" onsubmit="return false;" class="relative w-full">
+                        <input
+                            type="number"
+                            id="calcInput"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            placeholder="Type new total..."
+                            autocomplete="off"
+                            class="w-full bg-slate-900/90 text-center text-2xl font-black font-mono text-white py-4 px-6 rounded-2xl border-2 border-indigo-500/40 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 transition placeholder-slate-600 shadow-inner"
+                        />
+                        <button
+                            type="submit"
+                            id="submitAnsBtn"
+                            class="absolute right-2 top-2 bottom-2 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center"
+                        >
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+
+                    <!-- VIRTUAL NUMERIC KEYPAD TOGGLEABLE / QUICK PAD FOR TOUCH DEVICES -->
+                    <div id="virtualKeypad" class="grid grid-cols-3 gap-2 w-full pt-1">
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="1">1</button>
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="2">2</button>
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="3">3</button>
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="4">4</button>
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="5">5</button>
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="6">6</button>
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="7">7</button>
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="8">8</button>
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="9">9</button>
+                        <button type="button" id="keyClear" class="py-3 bg-rose-950/60 hover:bg-rose-900 text-rose-300 font-bold rounded-xl transition text-sm flex items-center justify-center">CLR</button>
+                        <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="0">0</button>
+                        <button type="button" id="keyBackspace" class="py-3 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition flex items-center justify-center">
+                            <i class="fa-solid fa-backspace"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULT / VICTORY MODAL -->
+            <div id="resultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-indigo-500/30 text-center space-y-5 animate-scaleUp">
+                    
+                    <div id="resultIconBox" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                        <i class="fa-solid fa-trophy text-2xl text-white"></i>
+                    </div>
+
+                    <div>
+                        <h3 id="resultTitle" class="text-2xl font-black text-white">Sprint Completed!</h3>
+                        <p id="resultSubtitle" class="text-xs text-slate-400 mt-1">Great mental math performance!</p>
+                    </div>
+
+                    <!-- STATS SUMMARY GRID -->
+                    <div class="grid grid-cols-2 gap-3 bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-left">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500">Total Time</span>
+                            <div id="resTotalTime" class="text-lg font-black font-mono text-emerald-400">14.2s</div>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500">Calculations</span>
+                            <div id="resCalcCount" class="text-lg font-black font-mono text-indigo-400">14 ops</div>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500">Avg Speed</span>
+                            <div id="resAvgSpeed" class="text-lg font-black font-mono text-amber-400">1.01s / op</div>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500">Max Streak</span>
+                            <div id="resMaxStreak" class="text-lg font-black font-mono text-violet-400">14</div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button id="resHomeBtn" class="w-1/2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-sm text-slate-200 transition">
+                            Menu
+                        </button>
+                        <button id="resRetryBtn" class="w-1/2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-sm text-white shadow-lg shadow-indigo-500/30 transition">
+                            Play Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HELP / INSTRUCTIONS MODAL -->
+            <div id="helpModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+                <div class="glass-panel p-6 rounded-3xl max-w-md w-full border border-slate-700 text-left space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-extrabold text-lg text-white">How to Practice</h3>
+                        <button id="closeHelpBtn" class="p-1 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    </div>
+
+                    <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
+                        <p class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <strong>Addition Mode (0 &rarr; 100):</strong><br>
+                            Starts at origin 0. The app displays a random single digit (e.g. <code>Add 6</code>). Calculate the new sum in your head (0 + 6 = 6) and enter <code>6</code>. Next might be <code>Add 8</code>, so you enter <code>14</code>, and so on until total exceeds 100!
+                        </p>
+                        <p class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <strong>Subtraction Mode (100 &rarr; 0):</strong><br>
+                            Starts at origin 100. Subtract each random single digit (e.g. <code>Sub 4</code> &rarr; enter <code>96</code>) until you reach 0.
+                        </p>
+                        <p class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <strong>Timer Rule:</strong><br>
+                            If the circular countdown depletes before you enter the correct sum, your progress resets back to origin! Stay fast and precise.
+                        </p>
+                    </div>
+                    <button id="closeHelpConfirmBtn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition">Got It!</button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER BAR -->
+        <footer class="text-center text-[11px] text-slate-500 py-2">
+            <p>Designed for Fast Mental Math Training &bull; Installable PWA</p>
+        </footer>
+    </div>
+
+    <script>
+        // APP STATE
+        const state = {
+            mode: 'ADD', // 'ADD' or 'SUB'
+            origin: 0,
+            target: 100,
+            currentTotal: 0,
+            currentDigit: 0,
+            expectedAnswer: 0,
+            speedLimitSec: 5, // 0 = zen (no timer)
+            timerRemaining: 5,
+            timerInterval: null,
+            startTime: null,
+            opCount: 0,
+            streak: 0,
+            maxStreak: 0,
+            soundEnabled: true,
+            isPlaying: false
+        };
+
+        // SOUND SYNTHESIZER USING WEB AUDIO API
+        class AudioSynth {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
+            playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+                if (!state.soundEnabled) return;
+                try {
+                    this.init();
+                    if (this.ctx.state === 'suspended') {
+                        this.ctx.resume();
+                    }
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {}
+            }
+            playCorrect() {
+                // Pitch rises slightly with streak
+                const pitch = 440 + Math.min(state.streak * 25, 400);
+                this.playTone(pitch, 'triangle', 0.12, 0.12);
+            }
+            playWrong() {
+                this.playTone(180, 'sawtooth', 0.25, 0.2);
+            }
+            playVictory() {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((n, idx) => {
+                    setTimeout(() => this.playTone(n, 'sine', 0.25, 0.15), idx * 100);
+                });
+            }
+        }
+        const audio = new AudioSynth();
+
+        // CANVAS BACKGROUND ANIMATION
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 1.2;
+                this.vy = (Math.random() - 0.5) * 1.2;
+                this.radius = Math.random() * 2 + 1;
+                this.alpha = Math.random() * 0.5 + 0.2;
+                this.color = color || '#6366f1';
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Generate initial background particles
+        for (let i = 0; i < 35; i++) {
+            particles.push(new Particle());
+        }
+
+        function spawnBurst(x, y, count = 20, color = '#10b981') {
+            for (let i = 0; i < count; i++) {
+                const p = new Particle(x, y, color);
+                p.vx = (Math.random() - 0.5) * 6;
+                p.vy = (Math.random() - 0.5) * 6;
+                p.radius = Math.random() * 3 + 2;
+                p.alpha = 1;
+                particles.push(p);
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, idx) => {
+                p.update();
+                p.draw();
+                // Fade out extra burst particles
+                if (particles.length > 35 && p.alpha > 0) {
+                    p.alpha -= 0.015;
+                }
+            });
+            particles = particles.filter(p => p.alpha > 0);
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // DOM ELEMENTS
+        const startView = document.getElementById('startView');
+        const gameView = document.getElementById('gameView');
+        const resultModal = document.getElementById('resultModal');
+        const helpModal = document.getElementById('helpModal');
+
+        const modeBadge = document.getElementById('modeBadge');
+        const selectAddMode = document.getElementById('selectAddMode');
+        const selectSubMode = document.getElementById('selectSubMode');
+        const startSprintBtn = document.getElementById('startSprintBtn');
+        const quitGameBtn = document.getElementById('quitGameBtn');
+
+        const currentTotalDisplay = document.getElementById('currentTotalDisplay');
+        const taskSubheading = document.getElementById('taskSubheading');
+        const progressText = document.getElementById('progressText');
+        const streakBadge = document.getElementById('streakBadge');
+        const streakCount = document.getElementById('streakCount');
+
+        const calcInput = document.getElementById('calcInput');
+        const answerForm = document.getElementById('answerForm');
+        const submitAnsBtn = document.getElementById('submitAnsBtn');
+        const mainDisplayCard = document.getElementById('mainDisplayCard');
+
+        const timerCircle = document.getElementById('timerCircle');
+        const timerText = document.getElementById('timerText');
+        const timerContainer = document.getElementById('timerContainer');
+
+        // MODE SELECTION HANDLERS
+        selectAddMode.addEventListener('click', () => setMode('ADD'));
+        selectSubMode.addEventListener('click', () => setMode('SUB'));
+
+        function setMode(m) {
+            state.mode = m;
+            if (m === 'ADD') {
+                selectAddMode.classList.add('border-indigo-500', 'glow-indigo');
+                selectSubMode.classList.remove('border-indigo-500', 'glow-indigo');
+                modeBadge.textContent = 'Addition Sprint';
+                modeBadge.className = 'text-xs text-indigo-400 font-medium';
+            } else {
+                selectSubMode.classList.add('border-rose-500', 'glow-rose');
+                selectAddMode.classList.remove('border-indigo-500', 'glow-indigo');
+                modeBadge.textContent = 'Subtraction Sprint';
+                modeBadge.className = 'text-xs text-rose-400 font-medium';
+            }
+        }
+
+        // SPEED BUTTONS
+        document.querySelectorAll('.speed-opt').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.speed-opt').forEach(b => {
+                    b.className = 'speed-opt py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition';
+                });
+                btn.className = 'speed-opt py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow';
+                state.speedLimitSec = parseFloat(btn.getAttribute('data-speed'));
+                document.getElementById('speedLabel').textContent = btn.getAttribute('data-label');
+            });
+        });
+
+        // SOUND TOGGLE
+        const soundBtn = document.getElementById('soundBtn');
+        const soundIcon = document.getElementById('soundIcon');
+        soundBtn.addEventListener('click', () => {
+            state.soundEnabled = !state.soundEnabled;
+            soundIcon.className = state.soundEnabled ? 'fa-solid fa-volume-high text-sm' : 'fa-solid fa-volume-xmark text-sm text-slate-500';
+        });
+
+        // HELP MODAL
+        document.getElementById('helpBtn').addEventListener('click', () => helpModal.classList.remove('hidden'));
+        document.getElementById('closeHelpBtn').addEventListener('click', () => helpModal.classList.add('hidden'));
+        document.getElementById('closeHelpConfirmBtn').addEventListener('click', () => helpModal.classList.add('hidden'));
+
+        // START GAME SPRINT
+        startSprintBtn.addEventListener('click', startGame);
+
+        function startGame() {
+            startView.classList.add('hidden');
+            gameView.classList.remove('hidden');
+            resultModal.classList.add('hidden');
+
+            state.isPlaying = true;
+            state.opCount = 0;
+            state.streak = 0;
+            state.maxStreak = 0;
+            state.startTime = Date.now();
+
+            if (state.mode === 'ADD') {
+                state.origin = 0;
+                state.target = 100;
+                state.currentTotal = 0;
+            } else {
+                state.origin = 100;
+                state.target = 0;
+                state.currentTotal = 100;
+            }
+
+            updateStreakUI();
+            nextTask();
+            focusInput();
+        }
+
+        // GENERATE NEXT SINGLE DIGIT TASK
+        function nextTask() {
+            // Random single digit 0-9
+            state.currentDigit = Math.floor(Math.random() * 10);
+
+            if (state.mode === 'ADD') {
+                state.expectedAnswer = state.currentTotal + state.currentDigit;
+                taskSubheading.textContent = `ADD ${state.currentDigit}`;
+                taskSubheading.className = 'text-xl sm:text-2xl font-black text-indigo-300 font-mono tracking-wide';
+            } else {
+                state.expectedAnswer = state.currentTotal - state.currentDigit;
+                taskSubheading.textContent = `SUB ${state.currentDigit}`;
+                taskSubheading.className = 'text-xl sm:text-2xl font-black text-rose-300 font-mono tracking-wide';
+            }
+
+            currentTotalDisplay.textContent = state.currentTotal;
+            progressText.textContent = `${state.currentTotal} / ${state.target}`;
+
+            calcInput.value = '';
+            resetTimer();
+        }
+
+        // TIMER LOGIC & CIRCULAR PROGRESS
+        function resetTimer() {
+            clearInterval(state.timerInterval);
+            if (state.speedLimitSec === 0) {
+                timerContainer.classList.add('hidden');
+                return;
+            }
+            timerContainer.classList.remove('hidden');
+            state.timerRemaining = state.speedLimitSec;
+            updateTimerUI();
+
+            const intervalMs = 50;
+            state.timerInterval = setInterval(() => {
+                state.timerRemaining -= (intervalMs / 1000);
+                if (state.timerRemaining <= 0) {
+                    state.timerRemaining = 0;
+                    updateTimerUI();
+                    clearInterval(state.timerInterval);
+                    handleTimeoutReset();
+                } else {
+                    updateTimerUI();
+                }
+            }, intervalMs);
+        }
+
+        function updateTimerUI() {
+            if (state.speedLimitSec === 0) return;
+            const pct = (state.timerRemaining / state.speedLimitSec) * 100;
+            const strokeDash = `${pct}, 100`;
+            timerCircle.setAttribute('stroke-dasharray', strokeDash);
+            timerText.textContent = state.timerRemaining.toFixed(1);
+
+            if (pct < 30) {
+                timerCircle.setAttribute('class', 'timer-circle text-rose-500');
+            } else if (pct < 60) {
+                timerCircle.setAttribute('class', 'timer-circle text-amber-400');
+            } else {
+                timerCircle.setAttribute('class', 'timer-circle text-indigo-500');
+            }
+        }
+
+        // TIMEOUT PENALTY / RESET TO ORIGIN
+        function handleTimeoutReset() {
+            audio.playWrong();
+            mainDisplayCard.classList.add('animate-shake', 'border-rose-500');
+            
+            // Streak reset
+            state.streak = 0;
+            updateStreakUI();
+
+            // Flash screen notification
+            const origTotal = state.currentTotal;
+            state.currentTotal = state.origin; // Reset to origin per requirement!
+
+            setTimeout(() => {
+                mainDisplayCard.classList.remove('animate-shake', 'border-rose-500');
+                nextTask();
+            }, 400);
+        }
+
+        // ANSWER CHECK ENGINE
+        function checkAnswer() {
+            if (!state.isPlaying) return;
+            const val = parseInt(calcInput.value, 10);
+            if (isNaN(val)) return;
+
+            if (val === state.expectedAnswer) {
+                // CORRECT
+                audio.playCorrect();
+                state.opCount++;
+                state.streak++;
+                if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+                updateStreakUI();
+
+                // Particle burst at input box position
+                const rect = calcInput.getBoundingClientRect();
+                spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 12, '#10b981');
+
+                state.currentTotal = state.expectedAnswer;
+
+                // CHECK WIN CONDITION
+                if (state.mode === 'ADD' && state.currentTotal >= state.target) {
+                    finishGame(true);
+                } else if (state.mode === 'SUB' && state.currentTotal <= state.target) {
+                    finishGame(true);
+                } else {
+                    nextTask();
+                }
+            } else {
+                // Auto check only when length reaches expected or user submits
+                // Shake on wrong submit
+            }
+        }
+
+        // Auto-check on keystroke if character count matches expected answer length
+        calcInput.addEventListener('input', () => {
+            const valStr = calcInput.value.trim();
+            const expectedStr = state.expectedAnswer.toString();
+
+            if (valStr.length >= expectedStr.length) {
+                if (parseInt(valStr, 10) === state.expectedAnswer) {
+                    checkAnswer();
+                }
+            }
+        });
+
+        // Form submit listener
+        answerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val = parseInt(calcInput.value, 10);
+            if (!isNaN(val)) {
+                if (val === state.expectedAnswer) {
+                    checkAnswer();
+                } else {
+                    // Wrong submit action
+                    audio.playWrong();
+                    mainDisplayCard.classList.add('animate-shake');
+                    setTimeout(() => mainDisplayCard.classList.remove('animate-shake'), 350);
+                    calcInput.value = '';
+                }
+            }
+        });
+
+        // VIRTUAL NUMPAD HANDLERS
+        document.querySelectorAll('.num-key').forEach(key => {
+            key.addEventListener('click', () => {
+                const num = key.getAttribute('data-val');
+                calcInput.value += num;
+                calcInput.dispatchEvent(new Event('input'));
+            });
+        });
+
+        document.getElementById('keyClear').addEventListener('click', () => {
+            calcInput.value = '';
+            calcInput.focus();
+        });
+
+        document.getElementById('keyBackspace').addEventListener('click', () => {
+            calcInput.value = calcInput.value.slice(0, -1);
+            calcInput.dispatchEvent(new Event('input'));
+        });
+
+        function updateStreakUI() {
+            if (state.streak >= 3) {
+                streakBadge.classList.remove('hidden');
+                streakCount.textContent = state.streak;
+            } else {
+                streakBadge.classList.add('hidden');
+            }
+        }
+
+        function focusInput() {
+            setTimeout(() => {
+                calcInput.focus();
+            }, 100);
+        }
+
+        // FINISH GAME & RESULTS
+        function finishGame(isWin) {
+            clearInterval(state.timerInterval);
+            state.isPlaying = false;
+
+            const totalTimeSec = ((Date.now() - state.startTime) / 1000).toFixed(1);
+            const avgSpeed = (totalTimeSec / Math.max(state.opCount, 1)).toFixed(2);
+
+            document.getElementById('resTotalTime').textContent = `${totalTimeSec}s`;
+            document.getElementById('resCalcCount').textContent = `${state.opCount} ops`;
+            document.getElementById('resAvgSpeed').textContent = `${avgSpeed}s / op`;
+            document.getElementById('resMaxStreak').textContent = state.maxStreak;
+
+            audio.playVictory();
+            spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 50, '#6366f1');
+
+            // Save Highscores
+            saveBestTime(state.mode, parseFloat(totalTimeSec));
+
+            resultModal.classList.remove('hidden');
+        }
+
+        function saveBestTime(mode, timeSec) {
+            const key = mode === 'ADD' ? 'math_sprint_best_add' : 'math_sprint_best_sub';
+            const prev = localStorage.getItem(key);
+            if (!prev || timeSec < parseFloat(prev)) {
+                localStorage.setItem(key, timeSec);
+            }
+            loadBestStats();
+        }
+
+        function loadBestStats() {
+            const bestAdd = localStorage.getItem('math_sprint_best_add');
+            const bestSub = localStorage.getItem('math_sprint_best_sub');
+            document.getElementById('bestAddStats').textContent = bestAdd ? `${bestAdd}s` : '--';
+            document.getElementById('bestSubStats').textContent = bestSub ? `${bestSub}s` : '--';
+        }
+        loadBestStats();
+
+        // QUIT / RESET BUTTON
+        quitGameBtn.addEventListener('click', () => {
+            clearInterval(state.timerInterval);
+            state.isPlaying = false;
+            gameView.classList.add('hidden');
+            startView.classList.remove('hidden');
+        });
+
+        // MODAL RETRY & HOME BUTTONS
+        document.getElementById('resRetryBtn').addEventListener('click', () => {
+            resultModal.classList.add('hidden');
+            startGame();
+        });
+
+        document.getElementById('resHomeBtn').addEventListener('click', () => {
+            resultModal.classList.add('hidden');
+            gameView.classList.add('hidden');
+            startView.classList.remove('hidden');
+        });
+
+        // KEEP INPUT FOCUSED ON CLICKING ON MAIN DISPLAY
+        mainDisplayCard.addEventListener('click', focusInput);
+    </script>
+</body>
+</html>
