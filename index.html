@@ -21,7 +21,7 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#eep2ff',
+                            50: '#eef2ff',
                             400: '#818cf8',
                             500: '#6366f1',
                             600: '#4f46e5',
@@ -50,6 +50,36 @@
             user-select: none;
         }
 
+        /* Custom Beautiful Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99, 102, 241, 0.4) rgba(15, 23, 42, 0.6);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 9999px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+            border-radius: 9999px;
+            border: 2px solid rgba(15, 23, 42, 0.8);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #818cf8, #a78bfa);
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
         /* Glassmorphism elements */
         .glass-panel {
             background: rgba(15, 23, 42, 0.75);
@@ -66,7 +96,7 @@
 
         /* Circular progress transition */
         .timer-circle {
-            transition: stroke-dashoffset 0.1s linear, stroke 0.3s ease;
+            transition: stroke-dashoffset 0.08s linear, stroke 0.3s ease;
         }
 
         /* Prevent spin buttons on number input */
@@ -79,7 +109,7 @@
             -moz-appearance: textfield;
         }
 
-        /* Shake animation on wrong input */
+        /* Animations */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             20%, 60% { transform: translateX(-10px); }
@@ -89,16 +119,18 @@
             animation: shake 0.35s ease-in-out;
         }
 
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.7); }
+        }
+        .animate-glow {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
         /* Glow pulse for active state */
-        .glow-indigo {
-            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.5);
-        }
-        .glow-emerald {
-            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.5);
-        }
-        .glow-rose {
-            box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.5);
-        }
+        .glow-indigo { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.5); }
+        .glow-emerald { box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.5); }
+        .glow-rose { box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.5); }
 
         /* Pulse glow animation for streak badge */
         @keyframes badgePulse {
@@ -125,7 +157,7 @@
     <!-- Particle Background Canvas -->
     <canvas id="bgCanvas"></canvas>
 
-    <div class="relative z-10 flex flex-col min-h-screen max-w-2xl mx-auto w-full px-4 py-4 sm:py-6 justify-between">
+    <div class="relative z-10 flex flex-col min-h-screen max-w-2xl lg:max-w-4xl mx-auto w-full px-4 py-4 sm:py-6 justify-between">
         
         <!-- TOP HEADER BAR -->
         <header class="glass-panel rounded-2xl px-4 py-3 flex items-center justify-between shadow-xl">
@@ -141,12 +173,12 @@
 
             <div class="flex items-center space-x-2 sm:space-x-3">
                 <!-- Sound Toggle -->
-                <button id="soundBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center" title="Toggle Audio">
+                <button id="soundBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center active:scale-95" title="Toggle Audio (M)">
                     <i id="soundIcon" class="fa-solid fa-volume-high text-sm"></i>
                 </button>
 
                 <!-- Help / Info Modal Trigger -->
-                <button id="helpBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center" title="How to Play">
+                <button id="helpBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center active:scale-95" title="How to Play">
                     <i class="fa-solid fa-circle-question text-sm"></i>
                 </button>
             </div>
@@ -156,88 +188,133 @@
         <main class="my-auto py-4 flex flex-col items-center">
             
             <!-- START / HOME SCREEN VIEW -->
-            <div id="startView" class="w-full flex flex-col items-center space-y-6 text-center">
-                <div class="space-y-2 max-w-md">
-                    <span class="inline-block px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold tracking-wide uppercase">
-                        Fast Mental Arithmetic
+            <div id="startView" class="w-full flex flex-col items-center space-y-5 sm:space-y-6 text-center my-auto transition-all duration-300">
+                
+                <!-- HERO HEADER -->
+                <div class="space-y-2 max-w-lg lg:max-w-2xl mx-auto px-2">
+                    <span class="inline-flex items-center space-x-1.5 px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold tracking-wide uppercase backdrop-blur-sm">
+                        <i class="fa-solid fa-bolt text-[10px] text-indigo-400"></i>
+                        <span>Fast Mental Arithmetic</span>
                     </span>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-                        Master Speed Calculations
+                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
+                        Master Speed <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-emerald-400">Calculations</span>
                     </h2>
-                    <p class="text-sm text-slate-400 leading-relaxed">
-                        Start from origin, continuously apply single-digit operations (+0 to +9 or -0 to -9) in your head, and type the resulting sum directly!
+                    <p class="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md lg:max-w-lg mx-auto">
+                        Start at origin, continuously apply single-digit numbers (+0 to +9 or -0 to -9) in your head, and type the total sum directly!
                     </p>
                 </div>
 
-                <!-- Mode Selection Buttons -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
-                    <button id="selectAddMode" class="glass-card p-4 rounded-2xl text-left border border-indigo-500/30 hover:border-indigo-500 transition group hover:scale-[1.02] active:scale-[0.98] glow-indigo">
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                                <i class="fa-solid fa-plus text-sm"></i>
+                <!-- RESPONSIVE GRID LAYOUT FOR MOBILE & DESKTOP -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto text-left">
+                    
+                    <!-- LEFT COLUMN: MODE SELECTION & CTA BUTTON -->
+                    <div class="flex flex-col space-y-3 justify-between">
+                        <div class="space-y-2.5">
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1 flex items-center justify-between">
+                                <span>Select Practice Mode</span>
+                                <span class="text-[10px] text-indigo-400 font-normal">Origin Target</span>
+                            </label>
+                            
+                            <!-- Mode Selection Buttons -->
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <button id="selectAddMode" type="button" class="glass-card p-3.5 sm:p-4 rounded-2xl text-left border border-indigo-500/30 hover:border-indigo-500 transition group hover:scale-[1.02] active:scale-[0.98] glow-indigo flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                                                <i class="fa-solid fa-plus text-xs"></i>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">0 &rarr; 100</span>
+                                        </div>
+                                        <h3 class="font-bold text-white text-sm sm:text-base group-hover:text-indigo-300 transition">Addition</h3>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-2 leading-tight">Add single digits repeatedly up to &ge; 100.</p>
+                                </button>
+
+                                <button id="selectSubMode" type="button" class="glass-card p-3.5 sm:p-4 rounded-2xl text-left border border-indigo-500/30 hover:border-indigo-500 transition group hover:scale-[1.02] active:scale-[0.98] flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <div class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                                                <i class="fa-solid fa-minus text-xs"></i>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">100 &rarr; 0</span>
+                                        </div>
+                                        <h3 class="font-bold text-white text-sm sm:text-base group-hover:text-indigo-300 transition">Subtraction</h3>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-2 leading-tight">Subtract single digits repeatedly down to &le; 0.</p>
+                                </button>
                             </div>
-                            <span class="text-xs font-bold text-emerald-400">0 &rarr; 100</span>
                         </div>
-                        <h3 class="font-bold text-white text-base group-hover:text-indigo-300 transition">Addition Sprint</h3>
-                        <p class="text-xs text-slate-400 mt-1">Start at 0, add single digits repeatedly until target > 100.</p>
-                    </button>
 
-                    <button id="selectSubMode" class="glass-card p-4 rounded-2xl text-left border border-indigo-500/30 hover:border-indigo-500 transition group hover:scale-[1.02] active:scale-[0.98]">
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
-                                <i class="fa-solid fa-minus text-sm"></i>
+                        <!-- Big Start Game Button -->
+                        <button id="startSprintBtn" type="button" class="w-full py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-base sm:text-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.01] active:scale-[0.99] transition flex items-center justify-center space-x-2 mt-1">
+                            <i class="fa-solid fa-play text-sm"></i>
+                            <span>START SPRINT</span>
+                        </button>
+                    </div>
+
+                    <!-- RIGHT COLUMN: SPEED CONTROLS & STATS -->
+                    <div class="flex flex-col space-y-3 justify-between">
+                        <!-- Speed Options Card -->
+                        <div class="glass-panel p-4 rounded-2xl space-y-3 border border-slate-800">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Countdown Speed</span>
+                                <span id="speedLabel" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">Medium (5s)</span>
                             </div>
-                            <span class="text-xs font-bold text-rose-400">100 &rarr; 0</span>
+                            <div class="grid grid-cols-4 gap-1.5 sm:gap-2">
+                                <button type="button" class="speed-opt py-2 text-xs font-semibold rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="8" data-label="Easy (8s)">Easy</button>
+                                <button type="button" class="speed-opt py-2 text-xs font-semibold rounded-xl bg-indigo-600 text-white shadow shadow-indigo-500/20" data-speed="5" data-label="Medium (5s)">Medium</button>
+                                <button type="button" class="speed-opt py-2 text-xs font-semibold rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="3" data-label="Hard (3s)">Hard</button>
+                                <button type="button" class="speed-opt py-2 text-xs font-semibold rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="0" data-label="Zen (No Timer)">Zen</button>
+                            </div>
                         </div>
-                        <h3 class="font-bold text-white text-base group-hover:text-indigo-300 transition">Subtraction Sprint</h3>
-                        <p class="text-xs text-slate-400 mt-1">Start at 100, subtract single digits repeatedly down to 0.</p>
-                    </button>
-                </div>
 
-                <!-- Game Options & Difficulty Quick Select -->
-                <div class="glass-panel p-4 rounded-2xl w-full max-w-md space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-semibold text-slate-300">Countdown Limit / Speed</span>
-                        <span id="speedLabel" class="text-xs font-bold text-indigo-400">Medium (5s)</span>
+                        <!-- High Score & Stats Preview -->
+                        <div class="glass-card p-4 rounded-2xl space-y-2 border border-slate-800">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block">Personal Bests</span>
+                            <div class="grid grid-cols-2 gap-2.5 text-xs">
+                                <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-center">
+                                    <span class="text-[10px] text-slate-400 font-medium">Addition Sprint</span>
+                                    <span id="bestAddStats" class="font-bold text-emerald-400 font-mono text-sm sm:text-base mt-0.5">--</span>
+                                </div>
+                                <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-center">
+                                    <span class="text-[10px] text-slate-400 font-medium">Subtraction Sprint</span>
+                                    <span id="bestSubStats" class="font-bold text-rose-400 font-mono text-sm sm:text-base mt-0.5">--</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button class="speed-opt py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="8" data-label="Easy (8s)">Easy</button>
-                        <button class="speed-opt py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow" data-speed="5" data-label="Medium (5s)">Medium</button>
-                        <button class="speed-opt py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="3" data-label="Hard (3s)">Hard</button>
-                        <button class="speed-opt py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="0" data-label="Zen (No Timer)">Zen</button>
-                    </div>
-                </div>
 
-                <!-- Big Start Game Button -->
-                <button id="startSprintBtn" class="w-full max-w-md py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-lg shadow-lg shadow-indigo-500/40 hover:shadow-indigo-500/60 hover:scale-[1.01] active:scale-[0.99] transition flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-play"></i>
-                    <span>START SPRINT</span>
-                </button>
-
-                <!-- High Score & Stats Preview -->
-                <div class="flex justify-center space-x-6 text-xs text-slate-400">
-                    <div>Best Time (+): <span id="bestAddStats" class="font-bold text-slate-200">--</span></div>
-                    <div>Best Time (-): <span id="bestSubStats" class="font-bold text-slate-200">--</span></div>
                 </div>
             </div>
 
             <!-- ACTIVE GAME VIEW -->
-            <div id="gameView" class="w-full flex flex-col items-center hidden space-y-5">
+            <div id="gameView" class="w-full flex flex-col items-center hidden space-y-4">
                 
-                <!-- TOP HUD: CLEAN ROW GRID WITHOUT CARD CONTAINER -->
-                <div class="w-full grid grid-cols-2 items-center justify-between py-1 px-1">
-                    <!-- Top-Left Back Button -->
-                    <div class="flex justify-start">
-                        <button id="backToMenuBtn" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/50 text-xs font-semibold transition active:scale-95 shadow-sm">
+                <!-- TOP HUD: ROW GRID WITH PAUSE AND TIMER -->
+                <div class="w-full grid grid-cols-3 items-center justify-between py-1 px-1">
+                    <!-- Top-Left Back / Pause Buttons -->
+                    <div class="flex justify-start space-x-2">
+                        <button id="backToMenuBtn" class="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/50 text-xs font-semibold transition active:scale-95 shadow-sm" title="Exit to Menu (Esc)">
                             <i class="fa-solid fa-chevron-left text-xs"></i>
+                            <span class="hidden sm:inline">Menu</span>
                         </button>
+                        <button id="pauseBtn" class="flex items-center justify-center p-2 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/50 text-xs font-semibold transition active:scale-95 shadow-sm" title="Pause Game (P)">
+                            <i class="fa-solid fa-pause text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Middle Target Progress Bar Gauge -->
+                    <div class="flex flex-col items-center justify-center px-2">
+                        <div class="w-full bg-slate-800 rounded-full h-2 border border-slate-700 overflow-hidden">
+                            <div id="targetProgressBar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full w-0 transition-all duration-300"></div>
+                        </div>
+                        <span id="targetProgressText" class="text-[10px] font-mono text-slate-400 font-semibold mt-1">0 / 100</span>
                     </div>
 
                     <!-- Top-Right Circular Countdown Timer Ring -->
                     <div class="flex justify-end">
-                        <div id="timerContainer" class="relative w-12 h-12 flex items-center justify-center">
+                        <div id="timerContainer" class="relative w-11 h-11 flex items-center justify-center">
                             <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                <!-- Background Circle -->
                                 <path
                                     class="text-slate-800"
                                     stroke-width="3.5"
@@ -245,7 +322,6 @@
                                     fill="none"
                                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                 />
-                                <!-- Progress Ring Circle -->
                                 <path
                                     id="timerCircle"
                                     class="timer-circle text-indigo-500"
@@ -280,13 +356,13 @@
                             Current Running Total
                         </span>
 
-                        <!-- Whole Current Number Display (BOLD TOP NUMBER) -->
+                        <!-- Whole Current Number Display -->
                         <div id="currentTotalDisplay" class="text-6xl sm:text-7xl font-black tracking-tight text-white font-mono my-2 drop-shadow-md">
                             0
                         </div>
 
-                        <!-- Subheading Task Display (e.g. + 6 or - 3) -->
-                        <div id="taskDisplayContainer" class="mt-2 px-5 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center space-x-2">
+                        <!-- Subheading Task Display -->
+                        <div id="taskDisplayContainer" class="mt-2 px-6 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center space-x-2">
                             <span class="text-slate-400 font-semibold text-sm">Task:</span>
                             <span id="taskSubheading" class="text-xl sm:text-2xl font-black text-indigo-300 font-mono tracking-wide">
                                 ADD 6
@@ -311,7 +387,7 @@
                             type="submit"
                             id="submitAnsBtn"
                             class="absolute right-2 top-2 bottom-2 px-5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center"
-                            title="Submit"
+                            title="Submit Answer"
                         >
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
@@ -319,15 +395,15 @@
 
                     <!-- ON-DEMAND KEYPAD TOGGLE BUTTON -->
                     <div class="flex justify-between items-center px-1">
-                        <span class="text-[11px] text-slate-400">Mobile native keypad active</span>
+                        <span class="text-[11px] text-slate-500">Shortcuts: [R] Reset | [Esc] Menu | [P] Pause</span>
                         <button id="toggleNumpadBtn" type="button" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 hover:bg-slate-700 transition">
                             <i class="fa-solid fa-calculator text-xs"></i>
                             <span id="numpadBtnText">Show On-Screen Numpad</span>
                         </button>
                     </div>
 
-                    <!-- VIRTUAL NUMERIC KEYPAD (HIDDEN BY DEFAULT / ON-DEMAND ONLY) -->
-                    <div id="virtualKeypad" class="hidden grid grid-cols-3 gap-2 w-full pt-1 animate-fadeIn">
+                    <!-- VIRTUAL NUMERIC KEYPAD -->
+                    <div id="virtualKeypad" class="hidden grid grid-cols-3 gap-2 w-full pt-1">
                         <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="1">1</button>
                         <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="2">2</button>
                         <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="3">3</button>
@@ -347,8 +423,8 @@
             </div>
 
             <!-- RESULT / VICTORY MODAL -->
-            <div id="resultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-                <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-indigo-500/30 text-center space-y-5">
+            <div id="resultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-indigo-500/30 text-center space-y-5 animate-fadeIn">
                     
                     <div id="resultIconBox" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/30">
                         <i class="fa-solid fa-trophy text-2xl text-white"></i>
@@ -356,7 +432,10 @@
 
                     <div>
                         <h3 id="resultTitle" class="text-2xl font-black text-white">Sprint Completed!</h3>
-                        <p id="resultSubtitle" class="text-xs text-slate-400 mt-1">Great mental math performance!</p>
+                        <p id="resultSubtitle" class="text-xs text-slate-400 mt-1">Outstanding mental speed!</p>
+                        <div id="newRecordBadge" class="hidden inline-block mt-2 px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold">
+                            <i class="fa-solid fa-crown mr-1"></i> New High Score!
+                        </div>
                     </div>
 
                     <!-- STATS SUMMARY GRID -->
@@ -390,8 +469,27 @@
                 </div>
             </div>
 
+            <!-- PAUSE MODAL -->
+            <div id="pauseModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+                <div class="glass-panel p-6 rounded-3xl max-w-sm w-full border border-slate-700 text-center space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-slate-800 mx-auto flex items-center justify-center text-indigo-400">
+                        <i class="fa-solid fa-pause text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Sprint Paused</h3>
+                    <p class="text-xs text-slate-400">Take a breath! Click resume when ready.</p>
+                    <div class="space-y-2 pt-2">
+                        <button id="resumeBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-500/30">
+                            Resume Sprint
+                        </button>
+                        <button id="pauseQuitBtn" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition">
+                            Quit to Menu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- HELP / INSTRUCTIONS MODAL -->
-            <div id="helpModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+            <div id="helpModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
                 <div class="glass-panel p-6 rounded-3xl max-w-md w-full border border-slate-700 text-left space-y-4">
                     <div class="flex justify-between items-center">
                         <h3 class="font-extrabold text-lg text-white">How to Practice</h3>
@@ -401,11 +499,11 @@
                     <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
                         <p class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
                             <strong>Addition Mode (0 &rarr; 100):</strong><br>
-                            Starts at origin 0. The app displays a random single digit (e.g. <code>Add 6</code>). Calculate the new sum in your head (0 + 6 = 6) and enter <code>6</code>. Next might be <code>Add 8</code>, so you enter <code>14</code>, and so on until total exceeds 100!
+                            Starts at origin 0. The app displays a random single digit (e.g. <code>Add 6</code>). Calculate the new sum in your head (0 + 6 = 6) and enter <code>6</code>. Next might be <code>Add 8</code>, so you enter <code>14</code>, and so on until total &ge; 100!
                         </p>
                         <p class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
                             <strong>Subtraction Mode (100 &rarr; 0):</strong><br>
-                            Starts at origin 100. Subtract each random single digit (e.g. <code>Sub 4</code> &rarr; enter <code>96</code>) until you reach 0.
+                            Starts at origin 100. Subtract each random single digit (e.g. <code>Sub 4</code> &rarr; enter <code>96</code>) until you reach &le; 0.
                         </p>
                         <p class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
                             <strong>Timer Rule:</strong><br>
@@ -437,11 +535,14 @@
             timerRemaining: 5,
             timerInterval: null,
             startTime: null,
+            elapsedPausedMs: 0,
+            pauseStartTime: null,
             opCount: 0,
             streak: 0,
             maxStreak: 0,
             soundEnabled: true,
-            isPlaying: false
+            isPlaying: false,
+            isPaused: false
         };
 
         // SOUND SYNTHESIZER USING WEB AUDIO API
@@ -475,16 +576,16 @@
                 } catch (e) {}
             }
             playCorrect() {
-                const pitch = 440 + Math.min(state.streak * 25, 400);
+                const pitch = 440 + Math.min(state.streak * 30, 450);
                 this.playTone(pitch, 'triangle', 0.12, 0.12);
             }
             playWrong() {
-                this.playTone(180, 'sawtooth', 0.25, 0.2);
+                this.playTone(160, 'sawtooth', 0.25, 0.18);
             }
             playVictory() {
                 const notes = [523.25, 659.25, 783.99, 1046.50];
                 notes.forEach((n, idx) => {
-                    setTimeout(() => this.playTone(n, 'sine', 0.25, 0.15), idx * 100);
+                    setTimeout(() => this.playTone(n, 'sine', 0.22, 0.15), idx * 90);
                 });
             }
         }
@@ -564,12 +665,14 @@
         const gameView = document.getElementById('gameView');
         const resultModal = document.getElementById('resultModal');
         const helpModal = document.getElementById('helpModal');
+        const pauseModal = document.getElementById('pauseModal');
 
         const modeBadge = document.getElementById('modeBadge');
         const selectAddMode = document.getElementById('selectAddMode');
         const selectSubMode = document.getElementById('selectSubMode');
         const startSprintBtn = document.getElementById('startSprintBtn');
         const backToMenuBtn = document.getElementById('backToMenuBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
 
         const currentTotalDisplay = document.getElementById('currentTotalDisplay');
         const taskSubheading = document.getElementById('taskSubheading');
@@ -585,6 +688,9 @@
         const timerText = document.getElementById('timerText');
         const timerContainer = document.getElementById('timerContainer');
 
+        const targetProgressBar = document.getElementById('targetProgressBar');
+        const targetProgressText = document.getElementById('targetProgressText');
+
         const toggleNumpadBtn = document.getElementById('toggleNumpadBtn');
         const numpadBtnText = document.getElementById('numpadBtnText');
         const virtualKeypad = document.getElementById('virtualKeypad');
@@ -597,7 +703,7 @@
             state.mode = m;
             if (m === 'ADD') {
                 selectAddMode.classList.add('border-indigo-500', 'glow-indigo');
-                selectSubMode.classList.remove('border-indigo-500', 'glow-indigo');
+                selectSubMode.classList.remove('border-rose-500', 'glow-rose');
                 modeBadge.textContent = 'Addition Sprint';
                 modeBadge.className = 'text-xs text-indigo-400 font-medium';
             } else {
@@ -606,6 +712,7 @@
                 modeBadge.textContent = 'Subtraction Sprint';
                 modeBadge.className = 'text-xs text-rose-400 font-medium';
             }
+            loadBestStats();
         }
 
         // SPEED BUTTONS
@@ -617,21 +724,47 @@
                 btn.className = 'speed-opt py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow';
                 state.speedLimitSec = parseFloat(btn.getAttribute('data-speed'));
                 document.getElementById('speedLabel').textContent = btn.getAttribute('data-label');
+                loadBestStats();
             });
         });
 
         // SOUND TOGGLE
         const soundBtn = document.getElementById('soundBtn');
         const soundIcon = document.getElementById('soundIcon');
-        soundBtn.addEventListener('click', () => {
+        soundBtn.addEventListener('click', toggleSound);
+
+        function toggleSound() {
             state.soundEnabled = !state.soundEnabled;
             soundIcon.className = state.soundEnabled ? 'fa-solid fa-volume-high text-sm' : 'fa-solid fa-volume-xmark text-sm text-slate-500';
-        });
+        }
 
         // HELP MODAL
         document.getElementById('helpBtn').addEventListener('click', () => helpModal.classList.remove('hidden'));
         document.getElementById('closeHelpBtn').addEventListener('click', () => helpModal.classList.add('hidden'));
         document.getElementById('closeHelpConfirmBtn').addEventListener('click', () => helpModal.classList.add('hidden'));
+
+        // PAUSE HANDLERS
+        pauseBtn.addEventListener('click', togglePause);
+        document.getElementById('resumeBtn').addEventListener('click', togglePause);
+        document.getElementById('pauseQuitBtn').addEventListener('click', () => {
+            pauseModal.classList.add('hidden');
+            exitToMenu();
+        });
+
+        function togglePause() {
+            if (!state.isPlaying) return;
+            state.isPaused = !state.isPaused;
+            if (state.isPaused) {
+                clearInterval(state.timerInterval);
+                state.pauseStartTime = Date.now();
+                pauseModal.classList.remove('hidden');
+            } else {
+                state.elapsedPausedMs += (Date.now() - state.pauseStartTime);
+                pauseModal.classList.add('hidden');
+                resetTimer();
+                focusInput();
+            }
+        }
 
         // ON-DEMAND NUMPAD TOGGLE
         toggleNumpadBtn.addEventListener('click', () => {
@@ -653,11 +786,14 @@
             startView.classList.add('hidden');
             gameView.classList.remove('hidden');
             resultModal.classList.add('hidden');
+            pauseModal.classList.add('hidden');
 
             state.isPlaying = true;
+            state.isPaused = false;
             state.opCount = 0;
             state.streak = 0;
             state.maxStreak = 0;
+            state.elapsedPausedMs = 0;
             state.startTime = Date.now();
 
             if (state.mode === 'ADD') {
@@ -671,13 +807,13 @@
             }
 
             updateStreakUI();
+            updateProgressBar();
             nextTask();
             focusInput();
         }
 
         // GENERATE NEXT SINGLE DIGIT TASK
         function nextTask() {
-            // Random single digit 0-9
             state.currentDigit = Math.floor(Math.random() * 10);
 
             if (state.mode === 'ADD') {
@@ -693,14 +829,27 @@
             currentTotalDisplay.textContent = state.currentTotal;
 
             calcInput.value = '';
+            updateProgressBar();
             resetTimer();
+        }
+
+        // PROGRESS BAR GAUGE
+        function updateProgressBar() {
+            let pct = 0;
+            if (state.mode === 'ADD') {
+                pct = Math.min(100, Math.max(0, (state.currentTotal / state.target) * 100));
+            } else {
+                pct = Math.min(100, Math.max(0, ((100 - state.currentTotal) / 100) * 100));
+            }
+            targetProgressBar.style.width = `${pct}%`;
+            targetProgressText.textContent = `${state.currentTotal} / ${state.target}`;
         }
 
         // TIMER LOGIC & CIRCULAR PROGRESS
         function resetTimer() {
             clearInterval(state.timerInterval);
-            if (state.speedLimitSec === 0) {
-                timerContainer.classList.add('hidden');
+            if (state.speedLimitSec === 0 || state.isPaused) {
+                if (state.speedLimitSec === 0) timerContainer.classList.add('hidden');
                 return;
             }
             timerContainer.classList.remove('hidden');
@@ -742,22 +891,20 @@
             audio.playWrong();
             mainDisplayCard.classList.add('animate-shake', 'border-rose-500');
             
-            // Streak reset
             state.streak = 0;
             updateStreakUI();
 
-            // Flash screen notification & reset to origin per rule
             state.currentTotal = state.origin;
 
             setTimeout(() => {
                 mainDisplayCard.classList.remove('animate-shake', 'border-rose-500');
                 nextTask();
-            }, 400);
+            }, 380);
         }
 
         // ANSWER CHECK ENGINE
         function checkAnswer() {
-            if (!state.isPlaying) return;
+            if (!state.isPlaying || state.isPaused) return;
             const val = parseInt(calcInput.value, 10);
             if (isNaN(val)) return;
 
@@ -769,24 +916,24 @@
                 if (state.streak > state.maxStreak) state.maxStreak = state.streak;
                 updateStreakUI();
 
-                // Particle burst at input box position
+                // Particle burst
                 const rect = calcInput.getBoundingClientRect();
                 spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 12, '#10b981');
 
                 state.currentTotal = state.expectedAnswer;
 
-                // CHECK WIN CONDITION
+                // WIN CONDITION CHECK
                 if (state.mode === 'ADD' && state.currentTotal >= state.target) {
-                    finishGame(true);
+                    finishGame();
                 } else if (state.mode === 'SUB' && state.currentTotal <= state.target) {
-                    finishGame(true);
+                    finishGame();
                 } else {
                     nextTask();
                 }
             }
         }
 
-        // Auto-check on keystroke if character count matches expected answer length
+        // Auto-check on keystroke if character length matches
         calcInput.addEventListener('input', () => {
             const valStr = calcInput.value.trim();
             const expectedStr = state.expectedAnswer.toString();
@@ -817,6 +964,7 @@
         // VIRTUAL NUMPAD HANDLERS
         document.querySelectorAll('.num-key').forEach(key => {
             key.addEventListener('click', () => {
+                if (!state.isPlaying || state.isPaused) return;
                 const num = key.getAttribute('data-val');
                 calcInput.value += num;
                 calcInput.dispatchEvent(new Event('input'));
@@ -849,11 +997,12 @@
         }
 
         // FINISH GAME & RESULTS
-        function finishGame(isWin) {
+        function finishGame() {
             clearInterval(state.timerInterval);
             state.isPlaying = false;
 
-            const totalTimeSec = ((Date.now() - state.startTime) / 1000).toFixed(1);
+            const actualDurationMs = Date.now() - state.startTime - state.elapsedPausedMs;
+            const totalTimeSec = (actualDurationMs / 1000).toFixed(1);
             const avgSpeed = (totalTimeSec / Math.max(state.opCount, 1)).toFixed(2);
 
             document.getElementById('resTotalTime').textContent = `${totalTimeSec}s`;
@@ -862,38 +1011,57 @@
             document.getElementById('resMaxStreak').textContent = state.maxStreak;
 
             audio.playVictory();
-            spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 50, '#6366f1');
+            spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 60, '#6366f1');
 
             // Save Highscores
-            saveBestTime(state.mode, parseFloat(totalTimeSec));
+            const isNewBest = saveBestTime(state.mode, state.speedLimitSec, parseFloat(totalTimeSec));
+            const newRecordBadge = document.getElementById('newRecordBadge');
+            if (isNewBest) {
+                newRecordBadge.classList.remove('hidden');
+            } else {
+                newRecordBadge.classList.add('hidden');
+            }
 
             resultModal.classList.remove('hidden');
         }
 
-        function saveBestTime(mode, timeSec) {
-            const key = mode === 'ADD' ? 'math_sprint_best_add' : 'math_sprint_best_sub';
+        function getStorageKey(mode, speed) {
+            return `math_sprint_best_${mode.toLowerCase()}_speed_${speed}`;
+        }
+
+        function saveBestTime(mode, speed, timeSec) {
+            const key = getStorageKey(mode, speed);
             const prev = localStorage.getItem(key);
             if (!prev || timeSec < parseFloat(prev)) {
                 localStorage.setItem(key, timeSec);
+                loadBestStats();
+                return true;
             }
             loadBestStats();
+            return false;
         }
 
         function loadBestStats() {
-            const bestAdd = localStorage.getItem('math_sprint_best_add');
-            const bestSub = localStorage.getItem('math_sprint_best_sub');
+            const keyAdd = getStorageKey('ADD', state.speedLimitSec);
+            const keySub = getStorageKey('SUB', state.speedLimitSec);
+            const bestAdd = localStorage.getItem(keyAdd);
+            const bestSub = localStorage.getItem('math_sprint_best_sub_speed_' + state.speedLimitSec);
+
             document.getElementById('bestAddStats').textContent = bestAdd ? `${bestAdd}s` : '--';
             document.getElementById('bestSubStats').textContent = bestSub ? `${bestSub}s` : '--';
         }
         loadBestStats();
 
-        // QUIT / BACK TO MENU BUTTON HANDLER
-        backToMenuBtn.addEventListener('click', () => {
+        // QUIT / BACK TO MENU
+        function exitToMenu() {
             clearInterval(state.timerInterval);
             state.isPlaying = false;
+            state.isPaused = false;
             gameView.classList.add('hidden');
             startView.classList.remove('hidden');
-        });
+        }
+
+        backToMenuBtn.addEventListener('click', exitToMenu);
 
         // MODAL RETRY & HOME BUTTONS
         document.getElementById('resRetryBtn').addEventListener('click', () => {
@@ -903,11 +1071,26 @@
 
         document.getElementById('resHomeBtn').addEventListener('click', () => {
             resultModal.classList.add('hidden');
-            gameView.classList.add('hidden');
-            startView.classList.remove('hidden');
+            exitToMenu();
         });
 
-        // KEEP INPUT FOCUSED ON CLICKING ON MAIN DISPLAY
+        // GLOBAL KEYBOARD SHORTCUTS
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'm' || e.key === 'M') {
+                toggleSound();
+            }
+            if (state.isPlaying) {
+                if (e.key === 'Escape') {
+                    exitToMenu();
+                } else if (e.key === 'p' || e.key === 'P') {
+                    togglePause();
+                } else if (e.key === 'r' || e.key === 'R') {
+                    startGame();
+                }
+            }
+        });
+
+        // KEEP INPUT FOCUSED ON CLICKING MAIN DISPLAY
         mainDisplayCard.addEventListener('click', focusInput);
     </script>
 </body>
