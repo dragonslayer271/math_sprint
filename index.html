@@ -100,6 +100,15 @@
             box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.5);
         }
 
+        /* Pulse glow animation for streak badge */
+        @keyframes badgePulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.08); }
+        }
+        .animate-badge-pulse {
+            animation: badgePulse 1.5s infinite ease-in-out;
+        }
+
         /* Dynamic canvas background */
         #bgCanvas {
             position: fixed;
@@ -132,17 +141,12 @@
 
             <div class="flex items-center space-x-2 sm:space-x-3">
                 <!-- Sound Toggle -->
-                <button id="soundBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center">
+                <button id="soundBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center" title="Toggle Audio">
                     <i id="soundIcon" class="fa-solid fa-volume-high text-sm"></i>
                 </button>
 
-                <!-- Settings Modal Trigger -->
-                <button id="settingsBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center">
-                    <i class="fa-solid fa-gear text-sm"></i>
-                </button>
-
                 <!-- Help / Info Modal Trigger -->
-                <button id="helpBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center">
+                <button id="helpBtn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center" title="How to Play">
                     <i class="fa-solid fa-circle-question text-sm"></i>
                 </button>
             </div>
@@ -218,72 +222,76 @@
             </div>
 
             <!-- ACTIVE GAME VIEW -->
-            <div id="gameView" class="w-full flex flex-col items-center hidden space-y-4">
+            <div id="gameView" class="w-full flex flex-col items-center hidden space-y-5">
                 
-                <!-- TOP HUD: SCORE, TIMER, STREAK -->
-                <div class="w-full flex items-center justify-between glass-panel rounded-2xl px-5 py-3">
-                    <!-- Progress & Target Info -->
-                    <div class="flex flex-col">
-                        <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Progress Target</span>
-                        <div class="flex items-center space-x-2">
-                            <span id="progressText" class="text-sm font-extrabold text-white">0 / 100</span>
-                            <span id="streakBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
-                                🔥 <span id="streakCount">0</span>
-                            </span>
+                <!-- TOP HUD: CLEAN ROW GRID WITHOUT CARD CONTAINER -->
+                <div class="w-full grid grid-cols-2 items-center justify-between py-1 px-1">
+                    <!-- Top-Left Back Button -->
+                    <div class="flex justify-start">
+                        <button id="backToMenuBtn" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/50 text-xs font-semibold transition active:scale-95 shadow-sm">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Top-Right Circular Countdown Timer Ring -->
+                    <div class="flex justify-end">
+                        <div id="timerContainer" class="relative w-12 h-12 flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <!-- Background Circle -->
+                                <path
+                                    class="text-slate-800"
+                                    stroke-width="3.5"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                />
+                                <!-- Progress Ring Circle -->
+                                <path
+                                    id="timerCircle"
+                                    class="timer-circle text-indigo-500"
+                                    stroke-dasharray="100, 100"
+                                    stroke-dashoffset="0"
+                                    stroke-width="3.5"
+                                    stroke-linecap="round"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                />
+                            </svg>
+                            <span id="timerText" class="absolute text-xs font-black font-mono text-white">5.0</span>
                         </div>
                     </div>
-
-                    <!-- CIRCULAR COUNTDOWN TIMER RING -->
-                    <div id="timerContainer" class="relative w-14 h-14 flex items-center justify-center">
-                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                            <!-- Background Circle -->
-                            <path
-                                class="text-slate-800"
-                                stroke-width="3.5"
-                                stroke="currentColor"
-                                fill="none"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            />
-                            <!-- Progress Ring Circle -->
-                            <path
-                                id="timerCircle"
-                                class="timer-circle text-indigo-500"
-                                stroke-dasharray="100, 100"
-                                stroke-dashoffset="0"
-                                stroke-width="3.5"
-                                stroke-linecap="round"
-                                stroke="currentColor"
-                                fill="none"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            />
-                        </svg>
-                        <span id="timerText" class="absolute text-xs font-black font-mono text-white">5.0</span>
-                    </div>
-
-                    <!-- Stop / Reset Button -->
-                    <button id="quitGameBtn" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 rounded-xl text-xs font-semibold transition">
-                        Reset
-                    </button>
                 </div>
 
-                <!-- MAIN DISPLAY CARD -->
-                <div id="mainDisplayCard" class="w-full glass-card rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center shadow-2xl transition-all duration-200">
+                <!-- MAIN DISPLAY CARD CONTAINER WITH FLOATING OVERLAP STREAK BADGE -->
+                <div class="relative w-full pt-3">
                     
-                    <span class="text-xs uppercase tracking-widest font-bold text-indigo-400 mb-1">
-                        Current Running Total
-                    </span>
-
-                    <!-- Whole Current Number Display (BOLD TOP NUMBER) -->
-                    <div id="currentTotalDisplay" class="text-6xl sm:text-7xl font-black tracking-tight text-white font-mono my-2 drop-shadow-md">
-                        0
+                    <!-- Floating Streak Badge Overlapping Card Top Edge -->
+                    <div id="floatingStreakBadge" class="hidden absolute -top-1 left-1/2 transform -translate-x-1/2 z-20 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-black text-xs px-3.5 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center space-x-1.5 border border-amber-300 animate-badge-pulse">
+                        <i class="fa-solid fa-fire text-amber-950"></i>
+                        <span id="streakCount">0</span>
+                        <span class="text-[10px] tracking-wider uppercase">Streak</span>
                     </div>
 
-                    <!-- Subheading Task Display (e.g. + 6 or - 3) -->
-                    <div id="taskDisplayContainer" class="mt-2 px-5 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center space-x-2">
-                        <span class="text-slate-400 font-semibold text-sm">Task:</span>
-                        <span id="taskSubheading" class="text-xl sm:text-2xl font-black text-indigo-300 font-mono tracking-wide">
-                            ADD 6
+                    <!-- Main Number Display Box -->
+                    <div id="mainDisplayCard" class="w-full glass-card rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center shadow-2xl border border-slate-700/50 transition-all duration-200">
+                        
+                        <span class="text-xs uppercase tracking-widest font-bold text-indigo-400 mb-1">
+                            Current Running Total
                         </span>
+
+                        <!-- Whole Current Number Display (BOLD TOP NUMBER) -->
+                        <div id="currentTotalDisplay" class="text-6xl sm:text-7xl font-black tracking-tight text-white font-mono my-2 drop-shadow-md">
+                            0
+                        </div>
+
+                        <!-- Subheading Task Display (e.g. + 6 or - 3) -->
+                        <div id="taskDisplayContainer" class="mt-2 px-5 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center space-x-2">
+                            <span class="text-slate-400 font-semibold text-sm">Task:</span>
+                            <span id="taskSubheading" class="text-xl sm:text-2xl font-black text-indigo-300 font-mono tracking-wide">
+                                ADD 6
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -297,19 +305,29 @@
                             pattern="[0-9]*"
                             placeholder="Type new total..."
                             autocomplete="off"
-                            class="w-full bg-slate-900/90 text-center text-2xl font-black font-mono text-white py-4 px-6 rounded-2xl border-2 border-indigo-500/40 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 transition placeholder-slate-600 shadow-inner"
+                            class="w-full bg-slate-900/90 text-center text-2xl sm:text-3xl font-black font-mono text-white py-4 px-12 rounded-2xl border-2 border-indigo-500/40 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 transition placeholder-slate-600 shadow-inner"
                         />
                         <button
                             type="submit"
                             id="submitAnsBtn"
-                            class="absolute right-2 top-2 bottom-2 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center"
+                            class="absolute right-2 top-2 bottom-2 px-5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center"
+                            title="Submit"
                         >
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </form>
 
-                    <!-- VIRTUAL NUMERIC KEYPAD TOGGLEABLE / QUICK PAD FOR TOUCH DEVICES -->
-                    <div id="virtualKeypad" class="grid grid-cols-3 gap-2 w-full pt-1">
+                    <!-- ON-DEMAND KEYPAD TOGGLE BUTTON -->
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-[11px] text-slate-400">Mobile native keypad active</span>
+                        <button id="toggleNumpadBtn" type="button" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 hover:bg-slate-700 transition">
+                            <i class="fa-solid fa-calculator text-xs"></i>
+                            <span id="numpadBtnText">Show On-Screen Numpad</span>
+                        </button>
+                    </div>
+
+                    <!-- VIRTUAL NUMERIC KEYPAD (HIDDEN BY DEFAULT / ON-DEMAND ONLY) -->
+                    <div id="virtualKeypad" class="hidden grid grid-cols-3 gap-2 w-full pt-1 animate-fadeIn">
                         <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="1">1</button>
                         <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="2">2</button>
                         <button type="button" class="num-key py-3 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-xl font-mono font-bold rounded-xl text-white transition shadow" data-val="3">3</button>
@@ -330,7 +348,7 @@
 
             <!-- RESULT / VICTORY MODAL -->
             <div id="resultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-                <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-indigo-500/30 text-center space-y-5 animate-scaleUp">
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-indigo-500/30 text-center space-y-5">
                     
                     <div id="resultIconBox" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/30">
                         <i class="fa-solid fa-trophy text-2xl text-white"></i>
@@ -457,7 +475,6 @@
                 } catch (e) {}
             }
             playCorrect() {
-                // Pitch rises slightly with streak
                 const pitch = 440 + Math.min(state.streak * 25, 400);
                 this.playTone(pitch, 'triangle', 0.12, 0.12);
             }
@@ -530,10 +547,9 @@
 
         function animateCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, idx) => {
+            particles.forEach((p) => {
                 p.update();
                 p.draw();
-                // Fade out extra burst particles
                 if (particles.length > 35 && p.alpha > 0) {
                     p.alpha -= 0.015;
                 }
@@ -553,22 +569,25 @@
         const selectAddMode = document.getElementById('selectAddMode');
         const selectSubMode = document.getElementById('selectSubMode');
         const startSprintBtn = document.getElementById('startSprintBtn');
-        const quitGameBtn = document.getElementById('quitGameBtn');
+        const backToMenuBtn = document.getElementById('backToMenuBtn');
 
         const currentTotalDisplay = document.getElementById('currentTotalDisplay');
         const taskSubheading = document.getElementById('taskSubheading');
-        const progressText = document.getElementById('progressText');
-        const streakBadge = document.getElementById('streakBadge');
+        
+        const floatingStreakBadge = document.getElementById('floatingStreakBadge');
         const streakCount = document.getElementById('streakCount');
 
         const calcInput = document.getElementById('calcInput');
         const answerForm = document.getElementById('answerForm');
-        const submitAnsBtn = document.getElementById('submitAnsBtn');
         const mainDisplayCard = document.getElementById('mainDisplayCard');
 
         const timerCircle = document.getElementById('timerCircle');
         const timerText = document.getElementById('timerText');
         const timerContainer = document.getElementById('timerContainer');
+
+        const toggleNumpadBtn = document.getElementById('toggleNumpadBtn');
+        const numpadBtnText = document.getElementById('numpadBtnText');
+        const virtualKeypad = document.getElementById('virtualKeypad');
 
         // MODE SELECTION HANDLERS
         selectAddMode.addEventListener('click', () => setMode('ADD'));
@@ -591,7 +610,7 @@
 
         // SPEED BUTTONS
         document.querySelectorAll('.speed-opt').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 document.querySelectorAll('.speed-opt').forEach(b => {
                     b.className = 'speed-opt py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition';
                 });
@@ -613,6 +632,19 @@
         document.getElementById('helpBtn').addEventListener('click', () => helpModal.classList.remove('hidden'));
         document.getElementById('closeHelpBtn').addEventListener('click', () => helpModal.classList.add('hidden'));
         document.getElementById('closeHelpConfirmBtn').addEventListener('click', () => helpModal.classList.add('hidden'));
+
+        // ON-DEMAND NUMPAD TOGGLE
+        toggleNumpadBtn.addEventListener('click', () => {
+            const isHidden = virtualKeypad.classList.contains('hidden');
+            if (isHidden) {
+                virtualKeypad.classList.remove('hidden');
+                numpadBtnText.textContent = 'Hide On-Screen Numpad';
+            } else {
+                virtualKeypad.classList.add('hidden');
+                numpadBtnText.textContent = 'Show On-Screen Numpad';
+            }
+            focusInput();
+        });
 
         // START GAME SPRINT
         startSprintBtn.addEventListener('click', startGame);
@@ -659,7 +691,6 @@
             }
 
             currentTotalDisplay.textContent = state.currentTotal;
-            progressText.textContent = `${state.currentTotal} / ${state.target}`;
 
             calcInput.value = '';
             resetTimer();
@@ -715,9 +746,8 @@
             state.streak = 0;
             updateStreakUI();
 
-            // Flash screen notification
-            const origTotal = state.currentTotal;
-            state.currentTotal = state.origin; // Reset to origin per requirement!
+            // Flash screen notification & reset to origin per rule
+            state.currentTotal = state.origin;
 
             setTimeout(() => {
                 mainDisplayCard.classList.remove('animate-shake', 'border-rose-500');
@@ -753,9 +783,6 @@
                 } else {
                     nextTask();
                 }
-            } else {
-                // Auto check only when length reaches expected or user submits
-                // Shake on wrong submit
             }
         }
 
@@ -779,7 +806,6 @@
                 if (val === state.expectedAnswer) {
                     checkAnswer();
                 } else {
-                    // Wrong submit action
                     audio.playWrong();
                     mainDisplayCard.classList.add('animate-shake');
                     setTimeout(() => mainDisplayCard.classList.remove('animate-shake'), 350);
@@ -808,11 +834,11 @@
         });
 
         function updateStreakUI() {
-            if (state.streak >= 3) {
-                streakBadge.classList.remove('hidden');
+            if (state.streak >= 2) {
+                floatingStreakBadge.classList.remove('hidden');
                 streakCount.textContent = state.streak;
             } else {
-                streakBadge.classList.add('hidden');
+                floatingStreakBadge.classList.add('hidden');
             }
         }
 
@@ -861,8 +887,8 @@
         }
         loadBestStats();
 
-        // QUIT / RESET BUTTON
-        quitGameBtn.addEventListener('click', () => {
+        // QUIT / BACK TO MENU BUTTON HANDLER
+        backToMenuBtn.addEventListener('click', () => {
             clearInterval(state.timerInterval);
             state.isPlaying = false;
             gameView.classList.add('hidden');
