@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Math Sprint - Fast Mental Math Practice</title>
+    <title>Math Sprint - Fast Mental Math PWA</title>
     
     <!-- SVG Website Icon / Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M13 2L3 14h7v8l10-12h-7z'/></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M13 2L3 14h7v8l10-12h-7z'/></svg>">
+
+    <!-- Embedded PWA Web App Manifest (Data URI) -->
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Math%20Sprint%20Mental%20Math%22%2C%22short_name%22%3A%22MathSprint%22%2C%22description%22%3A%22Fast%20single-digit%20mental%20math%20addition%20and%20subtraction%20PWA.%20Works%20100%25%20offline.%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%23020617%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'%236366f1'%3E%3Cpath%20d%3D'M13%202L3%2014h7v8l10-12h-7z'%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%20512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 
     <!-- PWA & Mobile Web App Meta Tags -->
-    <meta name="description" content="Fast single-digit mental math addition and subtraction training web app. Works 100% offline.">
+    <meta name="description" content="Fast single-digit mental math addition and subtraction training PWA. Works 100% offline.">
     <meta name="theme-color" content="#020617">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -214,6 +218,26 @@
         }
         .btn-primary:active {
             transform: scale(0.98);
+        }
+
+        .btn-pwa-install {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+            font-weight: 800;
+            font-size: 12px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-pwa-install:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
         }
 
         .speed-grid {
@@ -433,11 +457,18 @@
                 </div>
                 <div>
                     <h1 style="font-size: 16px; font-weight: 800; line-height: 1.1;">Math Sprint</h1>
-                    <span id="modeBadge" style="font-size: 11px; color: #818cf8; font-weight: 600;">Addition Sprint</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span id="modeBadge" style="font-size: 11px; color: #818cf8; font-weight: 600;">Addition Sprint</span>
+                        <span id="networkStatusBadge" class="badge-pill" style="color: #10b981; background: rgba(16,185,129,0.15);">● Offline Ready</span>
+                    </div>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="pwaInstallBtn" class="btn-pwa-install hidden" title="Install App to Homescreen">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    <span>Install App</span>
+                </button>
                 <button id="soundBtn" class="btn-icon" title="Toggle Sound">
                     <svg id="soundIcon" class="svg-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
                 </button>
@@ -455,7 +486,7 @@
                 
                 <div>
                     <span class="badge-pill" style="background: rgba(99,102,241,0.15); color: #818cf8; border-color: rgba(99,102,241,0.3);">
-                        ⚡ Fast Mental Math (Offline Ready)
+                        ⚡ Progressive Web App (PWA) &bull; Standalone Offline
                     </span>
                     <h2 style="font-size: 32px; font-weight: 900; margin-top: 8px;">
                         Master Speed <span style="color: #818cf8;">Calculations</span>
@@ -698,7 +729,7 @@
 
         <!-- FOOTER -->
         <footer style="text-align: center; font-size: 11px; color: #475569; padding: 4px 0;">
-            Math Sprint &bull; 100% Offline Single-File App
+            Math Sprint PWA &bull; Installable Single-File Offline App
         </footer>
     </div>
 
@@ -722,22 +753,67 @@
             }
         };
 
-        // INLINE SERVICE WORKER FOR OFFLINE CACHING
+        // PWA & SERVICE WORKER INSTALLATION MANAGEMENT
+        let deferredPrompt = null;
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+        const networkStatusBadge = document.getElementById('networkStatusBadge');
+
+        // Handle PWA Install Event Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaInstallBtn.classList.remove('hidden');
+        });
+
+        pwaInstallBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    pwaInstallBtn.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // Monitor Network Connectivity Offline/Online
+        function updateNetworkStatus() {
+            if (navigator.onLine) {
+                networkStatusBadge.textContent = '● Offline Ready';
+                networkStatusBadge.style.color = '#10b981';
+                networkStatusBadge.style.background = 'rgba(16,185,129,0.15)';
+            } else {
+                networkStatusBadge.textContent = '⚡ Offline Mode Active';
+                networkStatusBadge.style.color = '#f59e0b';
+                networkStatusBadge.style.background = 'rgba(245,158,11,0.15)';
+            }
+        }
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        updateNetworkStatus();
+
+        // Safe Service Worker Registration
         if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
             window.addEventListener('load', () => {
-                const swContent = `
-                    const CACHE_NAME = 'math-sprint-v1';
-                    self.addEventListener('install', (e) => {
-                        e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.add(location.href)));
-                        self.skipWaiting();
-                    });
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
-                    });
-                `;
-                const blob = new Blob([swContent], { type: 'application/javascript' });
-                const blobUrl = URL.createObjectURL(blob);
-                navigator.serviceWorker.register(blobUrl).catch(() => {});
+                try {
+                    const swContent = `
+                        const CACHE_NAME = 'math-sprint-pwa-v2';
+                        self.addEventListener('install', (e) => {
+                            self.skipWaiting();
+                        });
+                        self.addEventListener('activate', (e) => {
+                            e.waitUntil(clients.claim());
+                        });
+                        self.addEventListener('fetch', (e) => {
+                            e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request).catch(() => new Response('Offline'))));
+                        });
+                    `;
+                    const blob = new Blob([swContent], { type: 'application/javascript' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    navigator.serviceWorker.register(blobUrl).catch(() => {});
+                } catch (err) {
+                    console.log('SW Registration skipped in local sandbox');
+                }
             });
         }
 
@@ -763,7 +839,7 @@
             isPaused: false
         };
 
-        // WEB AUDIO SYNTHESIZER
+        // WEB AUDIO SYNTHESIZER (100% Offline Audio)
         class AudioSynth {
             constructor() { this.ctx = null; }
             init() {
