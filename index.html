@@ -1,147 +1,413 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Math Sprint - Fast Mental Math Practice</title>
     
+    <!-- SVG Website Icon / Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M13 2L3 14h7v8l10-12h-7z'/></svg>">
+
     <!-- PWA & Mobile Web App Meta Tags -->
-    <meta name="description" content="Fast single-digit mental math addition and subtraction training web app.">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="Fast single-digit mental math addition and subtraction training web app. Works 100% offline.">
+    <meta name="theme-color" content="#020617">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Math Sprint">
-    <link rel="manifest" href='data:application/json,{"name":"Math Sprint","short_name":"MathSprint","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#6366f1","icons":[{"src":"https://img.icons8.com/color/192/000000/calculator.png","sizes":"192x192","type":"image/png"}]}'>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#eef2ff',
-                            400: '#818cf8',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts & FontAwesome -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
+        :root {
+            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            
+            --bg-main: #020617;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --panel-bg: rgba(15, 23, 42, 0.85);
+            --border-color: rgba(255, 255, 255, 0.12);
+            --brand-primary: #6366f1;
+            --brand-hover: #4f46e5;
+            --emerald: #10b981;
+            --rose: #f43f5e;
+            --amber: #f59e0b;
         }
 
-        /* Custom Beautiful Scrollbar */
         * {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(99, 102, 241, 0.4) rgba(15, 23, 42, 0.6);
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-
         ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 9999px;
+            background: rgba(15, 23, 42, 0.8);
         }
-
         ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+            background: rgba(99, 102, 241, 0.4);
             border-radius: 9999px;
             border: 2px solid rgba(15, 23, 42, 0.8);
         }
-
         ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, #818cf8, #a78bfa);
+            background: rgba(99, 102, 241, 0.8);
+        }
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99, 102, 241, 0.4) rgba(15, 23, 42, 0.8);
         }
 
-        ::-webkit-scrollbar-corner {
-            background: rgba(15, 23, 42, 0.8);
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-main);
+            color: #f8fafc;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        /* Glassmorphism elements */
         .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
+            background: var(--panel-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
         }
 
         .glass-card {
-            background: rgba(30, 41, 59, 0.6);
+            background: var(--card-bg);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
         }
 
-        /* Circular progress transition */
+        /* Layout Helpers */
+        .app-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 10px 14px;
+            justify-content: space-between;
+        }
+
+        header {
+            border-radius: 16px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+        }
+
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .svg-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .btn-icon {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        .btn-icon:hover {
+            background: rgba(51, 65, 85, 0.9);
+            color: #fff;
+        }
+        .btn-icon:active {
+            transform: scale(0.95);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        @media (max-width: 640px) {
+            .grid-responsive {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mode-card {
+            padding: 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mode-card.active-add {
+            border-color: #6366f1;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
+        }
+        .mode-card.active-sub {
+            border-color: #f43f5e;
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.35);
+        }
+
+        .badge-pill {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Primary Button */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+            font-weight: 900;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .speed-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .speed-opt {
+            padding: 8px 4px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            cursor: pointer;
+            text-align: center;
+        }
+        .speed-opt.active {
+            background: #4f46e5;
+            color: #fff;
+            border-color: #6366f1;
+        }
+
+        .display-card {
+            width: 100%;
+            border-radius: 20px;
+            padding: 18px 16px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .font-mono {
+            font-family: var(--font-mono);
+        }
+
+        .current-num {
+            font-size: 52px;
+            font-weight: 900;
+            line-height: 1;
+            margin: 6px 0;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .task-badge {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 4px 14px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .neg-auto-badge {
+            background: linear-gradient(135deg, #f43f5e, #be123c);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 900;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.5);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            animation: pulse-glow 1.2s infinite ease-in-out;
+            margin-bottom: 4px;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(244, 63, 94, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(244, 63, 94, 0.8); }
+        }
+
+        .calc-input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid rgba(99, 102, 241, 0.4);
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 26px;
+            font-weight: 900;
+            text-align: center;
+            padding: 10px 50px 10px 16px;
+            border-radius: 16px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .calc-input:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .input-submit-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            bottom: 8px;
+            width: 44px;
+            background: #4f46e5;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .streak-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #020617;
+            font-weight: 900;
+            font-size: 12px;
+            padding: 4px 14px;
+            border-radius: 9999px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 20;
+        }
+
+        .numpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            width: 100%;
+            padding-top: 4px;
+        }
+        .num-key {
+            padding: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: white;
+            font-family: var(--font-mono);
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+        }
+        .num-key:active {
+            background: #4f46e5;
+        }
+
         .timer-circle {
             transition: stroke-dashoffset 0.08s linear, stroke 0.3s ease;
         }
 
-        /* Prevent spin buttons on number input */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(8px);
         }
-        input[type=number] {
-            -moz-appearance: textfield;
+        .modal-box {
+            max-width: 400px;
+            width: 100%;
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
         }
 
         /* Animations */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-10px); }
-            40%, 80% { transform: translateX(10px); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
         }
         .animate-shake {
             animation: shake 0.35s ease-in-out;
         }
 
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
-            50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.7); }
-        }
-        .animate-glow {
-            animation: pulseGlow 2s infinite ease-in-out;
+        .hidden {
+            display: none !important;
         }
 
-        /* Glow pulse for active state */
-        .glow-indigo { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.5); }
-        .glow-emerald { box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.5); }
-        .glow-rose { box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.5); }
-
-        /* Pulse glow animation for streak badge */
-        @keyframes badgePulse {
-            0%, 100% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.08); }
-        }
-        .animate-badge-pulse {
-            animation: badgePulse 1.5s infinite ease-in-out;
-        }
-
-        /* Dynamic canvas background */
         #bgCanvas {
             position: fixed;
             top: 0;
@@ -153,132 +419,105 @@
         }
     </style>
 </head>
-<body class="min-h-dvh h-dvh overflow-hidden text-slate-100 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
-    <!-- Particle Background Canvas -->
+<body>
+    <!-- Background Canvas -->
     <canvas id="bgCanvas"></canvas>
 
-    <div class="relative z-10 flex flex-col h-full max-w-2xl lg:max-w-4xl mx-auto w-full px-3 py-1.5 sm:px-4 sm:py-3 justify-between overflow-hidden">
+    <div class="app-container">
         
-        <!-- TOP HEADER BAR -->
-        <header class="glass-panel rounded-2xl px-4 py-2 flex items-center justify-between shadow-xl shrink-0">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                    <i class="fa-solid fa-bolt text-base text-white"></i>
+        <!-- HEADER BAR -->
+        <header class="glass-panel">
+            <div class="header-title-box">
+                <div class="icon-badge">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M13 2L3 14h7v8l10-12h-7z"/></svg>
                 </div>
                 <div>
-                    <h1 class="font-bold text-sm sm:text-lg leading-none tracking-tight">Math Sprint</h1>
-                    <span id="modeBadge" class="text-[11px] sm:text-xs text-indigo-400 font-medium">Addition Sprint</span>
+                    <h1 style="font-size: 16px; font-weight: 800; line-height: 1.1;">Math Sprint</h1>
+                    <span id="modeBadge" style="font-size: 11px; color: #818cf8; font-weight: 600;">Addition Sprint</span>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <!-- Sound Toggle -->
-                <button id="soundBtn" class="p-2 sm:p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center active:scale-95" title="Toggle Audio (M)">
-                    <i id="soundIcon" class="fa-solid fa-volume-high text-xs sm:text-sm"></i>
+            <div style="display: flex; gap: 8px;">
+                <button id="soundBtn" class="btn-icon" title="Toggle Sound">
+                    <svg id="soundIcon" class="svg-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
                 </button>
-
-                <!-- Help / Info Modal Trigger -->
-                <button id="helpBtn" class="p-2 sm:p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center active:scale-95" title="How to Play">
-                    <i class="fa-solid fa-circle-question text-xs sm:text-sm"></i>
+                <button id="helpBtn" class="btn-icon" title="How to Play">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>
                 </button>
             </div>
         </header>
 
-        <!-- MAIN GAMEPLAY AREA -->
-        <main class="py-1 sm:py-2 flex flex-col items-center flex-1 justify-center overflow-hidden">
+        <!-- MAIN VIEW CONTAINER -->
+        <main style="margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; flex: 1; padding-top: 8px;">
             
-            <!-- START / HOME SCREEN VIEW -->
-            <div id="startView" class="w-full flex flex-col items-center space-y-3 sm:space-y-6 text-center my-auto transition-all duration-300">
+            <!-- START / MENU VIEW -->
+            <div id="startView" style="width: 100%; text-align: center; display: flex; flex-direction: column; gap: 16px; margin: auto 0;">
                 
-                <!-- HERO HEADER -->
-                <div class="space-y-2 max-w-lg lg:max-w-2xl mx-auto px-2">
-                    <span class="inline-flex items-center space-x-1.5 px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold tracking-wide uppercase backdrop-blur-sm">
-                        <i class="fa-solid fa-bolt text-[10px] text-indigo-400"></i>
-                        <span>Fast Mental Arithmetic</span>
+                <div>
+                    <span class="badge-pill" style="background: rgba(99,102,241,0.15); color: #818cf8; border-color: rgba(99,102,241,0.3);">
+                        ⚡ Fast Mental Math (Offline Ready)
                     </span>
-                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
-                        Master Speed <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-emerald-400">Calculations</span>
+                    <h2 style="font-size: 32px; font-weight: 900; margin-top: 8px;">
+                        Master Speed <span style="color: #818cf8;">Calculations</span>
                     </h2>
-                    <p class="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md lg:max-w-lg mx-auto">
-                        Start at origin, continuously apply single-digit numbers (+0 to +9 or -0 to -9) in your head, and type the total sum directly!
+                    <p style="font-size: 12px; color: #94a3b8; max-width: 440px; margin: 6px auto 0;">
+                        Start at origin, continuously perform mental math operations (+0 to +9 or -0 to -9), and enter the running total!
                     </p>
                 </div>
 
-                <!-- RESPONSIVE GRID LAYOUT FOR MOBILE & DESKTOP -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto text-left">
+                <div class="grid-2 grid-responsive" style="max-width: 680px; margin: 0 auto; width: 100%;">
                     
-                    <!-- LEFT COLUMN: MODE SELECTION & CTA BUTTON -->
-                    <div class="flex flex-col space-y-3 justify-between">
-                        <div class="space-y-2.5">
-                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1 flex items-center justify-between">
-                                <span>Select Practice Mode</span>
-                                <span class="text-[10px] text-indigo-400 font-normal">Origin Target</span>
-                            </label>
-                            
-                            <!-- Mode Selection Buttons -->
-                            <div class="grid grid-cols-2 gap-2.5">
-                                <button id="selectAddMode" type="button" class="glass-card p-3.5 sm:p-4 rounded-2xl text-left border border-indigo-500/30 hover:border-indigo-500 transition group hover:scale-[1.02] active:scale-[0.98] glow-indigo flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex justify-between items-center mb-2">
-                                            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                                                <i class="fa-solid fa-plus text-xs"></i>
-                                            </div>
-                                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">0 &rarr; 100</span>
-                                        </div>
-                                        <h3 class="font-bold text-white text-sm sm:text-base group-hover:text-indigo-300 transition">Addition</h3>
-                                    </div>
-                                    <p class="text-[11px] text-slate-400 mt-2 leading-tight">Add single digits repeatedly up to &ge; 100.</p>
-                                </button>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="grid-2">
+                            <div id="selectAddMode" class="mode-card active-add">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(16,185,129,0.2); color: #10b981; display: flex; align-items: center; justify-content: center; font-weight: 900;">+</div>
+                                    <span class="badge-pill" style="color: #10b981; background: rgba(16,185,129,0.1);">0 → 100</span>
+                                </div>
+                                <h3 style="font-size: 14px; font-weight: 800;">Addition</h3>
+                                <p style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Add digits continuously up to ≥ 100.</p>
+                            </div>
 
-                                <button id="selectSubMode" type="button" class="glass-card p-3.5 sm:p-4 rounded-2xl text-left border border-indigo-500/30 hover:border-indigo-500 transition group hover:scale-[1.02] active:scale-[0.98] flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex justify-between items-center mb-2">
-                                            <div class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
-                                                <i class="fa-solid fa-minus text-xs"></i>
-                                            </div>
-                                            <span class="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">100 &rarr; 0</span>
-                                        </div>
-                                        <h3 class="font-bold text-white text-sm sm:text-base group-hover:text-indigo-300 transition">Subtraction</h3>
-                                    </div>
-                                    <p class="text-[11px] text-slate-400 mt-2 leading-tight">Subtract single digits repeatedly down to &le; 0.</p>
-                                </button>
+                            <div id="selectSubMode" class="mode-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(244,63,94,0.2); color: #f43f5e; display: flex; align-items: center; justify-content: center; font-weight: 900;">-</div>
+                                    <span class="badge-pill" style="color: #f43f5e; background: rgba(244,63,94,0.1);">100 → 0</span>
+                                </div>
+                                <h3 style="font-size: 14px; font-weight: 800;">Subtraction</h3>
+                                <p style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Subtract digits continuously down to ≤ 0.</p>
                             </div>
                         </div>
 
-                        <!-- Big Start Game Button -->
-                        <button id="startSprintBtn" type="button" class="w-full py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-base sm:text-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.01] active:scale-[0.99] transition flex items-center justify-center space-x-2 mt-1">
-                            <i class="fa-solid fa-play text-sm"></i>
+                        <button id="startSprintBtn" class="btn-primary">
+                            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                             <span>START SPRINT</span>
                         </button>
                     </div>
 
-                    <!-- RIGHT COLUMN: SPEED CONTROLS & STATS -->
-                    <div class="flex flex-col space-y-3 justify-between">
-                        <!-- Speed Options Card -->
-                        <div class="glass-panel p-4 rounded-2xl space-y-3 border border-slate-800">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Countdown Speed</span>
-                                <span id="speedLabel" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">Medium (5s)</span>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="glass-panel" style="padding: 14px; border-radius: 16px; text-align: left;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Countdown Speed</span>
+                                <span id="speedLabel" class="badge-pill" style="color: #818cf8; background: rgba(99,102,241,0.15);">Medium (5s)</span>
                             </div>
-                            <div class="grid grid-cols-4 gap-1.5 sm:gap-2">
-                                <button type="button" class="speed-opt py-2 text-xs font-semibold rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="8" data-label="Easy (8s)">Easy</button>
-                                <button type="button" class="speed-opt py-2 text-xs font-semibold rounded-xl bg-indigo-600 text-white shadow shadow-indigo-500/20" data-speed="5" data-label="Medium (5s)">Medium</button>
-                                <button type="button" class="speed-opt py-2 text-xs font-semibold rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="3" data-label="Hard (3s)">Hard</button>
-                                <button type="button" class="speed-opt py-2 text-xs font-semibold rounded-xl bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition" data-speed="0" data-label="Zen (No Timer)">Zen</button>
+                            <div class="speed-grid">
+                                <button type="button" class="speed-opt" data-speed="8" data-label="Easy (8s)">Easy</button>
+                                <button type="button" class="speed-opt active" data-speed="5" data-label="Medium (5s)">Medium</button>
+                                <button type="button" class="speed-opt" data-speed="3" data-label="Hard (3s)">Hard</button>
+                                <button type="button" class="speed-opt" data-speed="0" data-label="Zen (No Timer)">Zen</button>
                             </div>
                         </div>
 
-                        <!-- High Score & Stats Preview -->
-                        <div class="glass-card p-4 rounded-2xl space-y-2 border border-slate-800">
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block">Personal Bests</span>
-                            <div class="grid grid-cols-2 gap-2.5 text-xs">
-                                <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-center">
-                                    <span class="text-[10px] text-slate-400 font-medium">Addition Sprint</span>
-                                    <span id="bestAddStats" class="font-bold text-emerald-400 font-mono text-sm sm:text-base mt-0.5">--</span>
+                        <div class="glass-card" style="padding: 14px; border-radius: 16px; text-align: left;">
+                            <span style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Personal Bests</span>
+                            <div class="grid-2" style="margin-top: 6px;">
+                                <div style="background: rgba(15,23,42,0.6); padding: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <span style="font-size: 10px; color: #94a3b8;">Addition</span>
+                                    <div id="bestAddStats" class="font-mono" style="font-size: 14px; font-weight: 800; color: #10b981; margin-top: 2px;">--</div>
                                 </div>
-                                <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-center">
-                                    <span class="text-[10px] text-slate-400 font-medium">Subtraction Sprint</span>
-                                    <span id="bestSubStats" class="font-bold text-rose-400 font-mono text-sm sm:text-base mt-0.5">--</span>
+                                <div style="background: rgba(15,23,42,0.6); padding: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <span style="font-size: 10px; color: #94a3b8;">Subtraction</span>
+                                    <div id="bestSubStats" class="font-mono" style="font-size: 14px; font-weight: 800; color: #f43f5e; margin-top: 2px;">--</div>
                                 </div>
                             </div>
                         </div>
@@ -288,274 +527,229 @@
             </div>
 
             <!-- ACTIVE GAME VIEW -->
-            <div id="gameView" class="w-full flex flex-col items-center hidden space-y-1.5 sm:space-y-3 my-auto">
+            <div id="gameView" class="hidden" style="width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 8px;">
                 
-                <!-- TOP HUD: CLEAN ROW GRID WITHOUT CARD BOX wrapper -->
-                <div class="w-full grid grid-cols-2 items-center justify-between py-1 px-1">
-                    <!-- Top-Left Back & Pause Buttons -->
-                    <div class="flex justify-start items-center space-x-2">
-                        <button id="backToMenuBtn" class="flex items-center space-x-2 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/60 text-xs font-bold transition active:scale-95 shadow" title="Exit to Menu (Esc)">
-                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                <!-- HUD Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div style="display: flex; gap: 8px;">
+                        <button id="backToMenuBtn" class="btn-icon">
+                            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
                             <span>Back</span>
                         </button>
-                        <button id="pauseBtn" class="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/60 text-xs font-bold transition active:scale-95 shadow" title="Pause Sprint (P)">
-                            <i class="fa-solid fa-pause text-xs"></i>
+                        <button id="pauseBtn" class="btn-icon">
+                            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                             <span>Pause</span>
                         </button>
                     </div>
 
-                    <!-- Top-Right Circular Countdown Timer Ring -->
-                    <div class="flex justify-end">
-                        <div id="timerContainer" class="relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center">
-                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                <path
-                                    class="text-slate-800"
-                                    stroke-width="3.5"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                />
-                                <path
-                                    id="timerCircle"
-                                    class="timer-circle text-indigo-500"
-                                    stroke-dasharray="100, 100"
-                                    stroke-dashoffset="0"
-                                    stroke-width="3.5"
-                                    stroke-linecap="round"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                />
-                            </svg>
-                            <span id="timerText" class="absolute text-xs font-black font-mono text-white">5.0</span>
+                    <div id="timerContainer" style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 100%; height: 100%; transform: rotate(-90deg);" viewBox="0 0 36 36">
+                            <path stroke="rgba(255,255,255,0.1)" stroke-width="3.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path id="timerCircle" class="timer-circle" stroke="#6366f1" stroke-dasharray="100, 100" stroke-dashoffset="0" stroke-width="3.5" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        </svg>
+                        <span id="timerText" class="font-mono" style="position: absolute; font-size: 11px; font-weight: 900; color: #fff;">5.0</span>
+                    </div>
+                </div>
+
+                <!-- Main Card Display -->
+                <div style="position: relative; width: 100%; padding-top: 6px;">
+                    <div id="floatingStreakBadge" class="streak-badge hidden">
+                        <svg class="svg-icon" style="width: 12px; height: 12px; fill: #020617;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8c0-6.04-4.5-10.83-6.5-13.33z"/></svg>
+                        <span id="streakCount">0</span> STREAK
+                    </div>
+
+                    <div id="mainDisplayCard" class="glass-card display-card">
+                        <span style="font-size: 11px; font-weight: 800; color: #818cf8; text-transform: uppercase;">Current Running Total</span>
+                        <div id="currentTotalDisplay" class="font-mono current-num">0</div>
+                        <div class="task-badge">
+                            <span style="font-size: 12px; color: #94a3b8; font-weight: 700;">Task:</span>
+                            <span id="taskSubheading" class="font-mono" style="font-size: 18px; font-weight: 900; color: #a5b4fc;">ADD 6</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- MAIN DISPLAY CARD CONTAINER WITH FLOATING OVERLAP STREAK BADGE -->
-                <div class="relative w-full pt-1.5">
+                <!-- Input Box Container -->
+                <div style="display: flex; flex-direction: column; gap: 6px; align-items: center; width: 100%;">
                     
-                    <!-- Floating Streak Badge Overlapping Card Top Edge -->
-                    <div id="floatingStreakBadge" class="hidden absolute -top-2 left-1/2 transform -translate-x-1/2 z-20 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-black text-xs px-3.5 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center space-x-1.5 border border-amber-300 animate-badge-pulse">
-                        <i class="fa-solid fa-fire text-amber-950"></i>
-                        <span id="streakCount">0</span>
-                        <span class="text-[10px] tracking-wider uppercase">Streak</span>
-                    </div>
+                    <!-- Dynamic Negative Subtraction Auto-Fill Badge -->
+                    <button id="negFixBadge" type="button" class="neg-auto-badge hidden">
+                        <span>⚡ Target ≤ 0 (Tap to fill 0)</span>
+                    </button>
 
-                    <!-- Main Number Display Box -->
-                    <div id="mainDisplayCard" class="w-full glass-card rounded-2xl sm:rounded-3xl p-3 sm:p-6 flex flex-col items-center justify-center text-center shadow-2xl border border-slate-700/50 transition-all duration-200">
-                        
-                        <span class="text-[10px] sm:text-xs uppercase tracking-widest font-bold text-indigo-400 mb-0.5">
-                            Current Running Total
-                        </span>
-
-                        <!-- Whole Current Number Display -->
-                        <div id="currentTotalDisplay" class="text-4xl sm:text-6xl font-black tracking-tight text-white font-mono my-0.5 sm:my-1 drop-shadow-md">
-                            0
-                        </div>
-
-                        <!-- Subheading Task Display -->
-                        <div id="taskDisplayContainer" class="mt-1 px-4 py-1 sm:px-6 sm:py-1.5 rounded-xl sm:rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center space-x-2">
-                            <span class="text-slate-400 font-semibold text-xs sm:text-sm">Task:</span>
-                            <span id="taskSubheading" class="text-base sm:text-xl font-black text-indigo-300 font-mono tracking-wide">
-                                ADD 6
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- INPUT SECTION -->
-                <div class="w-full space-y-1.5">
-                    <form id="answerForm" onsubmit="return false;" class="relative w-full">
-                        <input
-                            type="number"
-                            id="calcInput"
-                            inputmode="numeric"
-                            pattern="[0-9]*"
-                            placeholder="Type new total..."
-                            autocomplete="off"
-                            class="w-full bg-slate-900/90 text-center text-xl sm:text-3xl font-black font-mono text-white py-2.5 sm:py-3.5 px-10 sm:px-12 rounded-2xl border-2 border-indigo-500/40 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 transition placeholder-slate-600 shadow-inner"
-                        />
-                        <button
-                            type="submit"
-                            id="submitAnsBtn"
-                            class="absolute right-2 top-2 bottom-2 px-4 sm:px-5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center"
-                            title="Submit Answer"
-                        >
-                            <i class="fa-solid fa-arrow-right"></i>
+                    <form id="answerForm" onsubmit="return false;" style="position: relative; width: 100%;">
+                        <input type="number" id="calcInput" name="math_sprint_ans" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type new total..." class="calc-input">
+                        <button type="submit" id="submitAnsBtn" class="input-submit-btn">
+                            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
                         </button>
                     </form>
 
-                    <!-- ON-DEMAND KEYPAD TOGGLE BUTTON -->
-                    <div class="flex justify-between items-center px-1">
-                        <span class="text-[10px] sm:text-[11px] text-slate-500">[R] Reset | [Esc] Menu</span>
-                        <button id="toggleNumpadBtn" type="button" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 hover:bg-slate-700 transition">
-                            <i class="fa-solid fa-calculator text-xs"></i>
-                            <span id="numpadBtnText">Show On-Screen Numpad</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <span style="font-size: 10px; color: #64748b;">[R] Reset | [Esc] Menu</span>
+                        <button id="toggleNumpadBtn" type="button" class="btn-icon" style="padding: 4px 10px;">
+                            <span id="numpadBtnText">Show Numpad</span>
                         </button>
                     </div>
 
-                    <!-- VIRTUAL NUMERIC KEYPAD -->
-                    <div id="virtualKeypad" class="hidden grid grid-cols-3 gap-1.5 w-full pt-1">
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="1">1</button>
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="2">2</button>
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="3">3</button>
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="4">4</button>
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="5">5</button>
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="6">6</button>
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="7">7</button>
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="8">8</button>
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="9">9</button>
-                        <button type="button" id="keyClear" class="py-2 bg-rose-950/60 hover:bg-rose-900 text-rose-300 font-bold rounded-xl transition text-xs flex items-center justify-center">CLR</button>
-                        <button type="button" class="num-key py-2 bg-slate-800/80 hover:bg-slate-700 active:bg-indigo-600 text-base font-mono font-bold rounded-xl text-white transition shadow" data-val="0">0</button>
-                        <button type="button" id="keyBackspace" class="py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition flex items-center justify-center">
-                            <i class="fa-solid fa-backspace text-sm"></i>
-                        </button>
+                    <!-- On-Screen Keypad -->
+                    <div id="virtualKeypad" class="numpad-grid hidden">
+                        <button type="button" class="num-key" data-val="1">1</button>
+                        <button type="button" class="num-key" data-val="2">2</button>
+                        <button type="button" class="num-key" data-val="3">3</button>
+                        <button type="button" class="num-key" data-val="4">4</button>
+                        <button type="button" class="num-key" data-val="5">5</button>
+                        <button type="button" class="num-key" data-val="6">6</button>
+                        <button type="button" class="num-key" data-val="7">7</button>
+                        <button type="button" class="num-key" data-val="8">8</button>
+                        <button type="button" class="num-key" data-val="9">9</button>
+                        <button type="button" id="keyClear" class="num-key" style="background: rgba(153,27,27,0.4); color: #fca5a5; font-size: 12px;">CLR</button>
+                        <button type="button" class="num-key" data-val="0">0</button>
+                        <button type="button" id="keyBackspace" class="num-key" style="font-size: 14px;">⌫</button>
                     </div>
                 </div>
+
             </div>
 
-            <!-- GAME OVER MODAL (TIME OUT) -->
-            <div id="gameOverModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-                <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-sm w-full border border-rose-500/30 text-center space-y-4">
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 to-red-500 mx-auto flex items-center justify-center shadow-lg shadow-rose-500/30">
-                        <i class="fa-solid fa-hourglass-end text-2xl text-white"></i>
+            <!-- GAME OVER MODAL -->
+            <div id="gameOverModal" class="modal-overlay hidden">
+                <div class="glass-panel modal-box" style="border-color: rgba(244,63,94,0.4);">
+                    <div style="width: 48px; height: 48px; border-radius: 16px; background: #f43f5e; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                        <svg class="svg-icon" style="width: 24px; height: 24px;" viewBox="0 0 24 24"><path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6z"/></svg>
                     </div>
-                    <div>
-                        <h3 class="text-2xl font-black text-white">Time's Up!</h3>
-                        <p class="text-xs text-slate-400 mt-1">The countdown hit zero. Choose to continue or restart.</p>
-                    </div>
-
-                    <div class="space-y-2 pt-2">
-                        <!-- RESUME BUTTON -->
-                        <button id="goResumeBtn" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-extrabold rounded-xl text-sm transition shadow-lg shadow-indigo-500/30 flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-play text-xs"></i>
-                            <span>Resume Sprint</span>
-                        </button>
-                        <!-- RESTART BUTTON -->
-                        <button id="goRetryBtn" class="w-full py-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs transition flex items-center justify-center space-x-2 border border-slate-700">
-                            <i class="fa-solid fa-rotate-right text-xs"></i>
-                            <span>Restart Sprint</span>
-                        </button>
-                        <!-- EXIT BUTTON -->
-                        <button id="goHomeBtn" class="w-full py-2 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white font-semibold rounded-xl text-xs transition flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-house text-xs"></i>
-                            <span>Exit to Menu</span>
-                        </button>
+                    <h3 style="font-size: 22px; font-weight: 900;">Time's Up!</h3>
+                    <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">The countdown ran out. Continue or restart.</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
+                        <button id="goResumeBtn" class="btn-primary" style="padding: 10px;">Resume Sprint</button>
+                        <button id="goRetryBtn" class="btn-icon" style="justify-content: center; padding: 10px;">Restart Sprint</button>
+                        <button id="goHomeBtn" class="btn-icon" style="justify-content: center; padding: 8px; background: transparent; border: none; color: #64748b;">Exit to Menu</button>
                     </div>
                 </div>
             </div>
 
             <!-- RESULT / VICTORY MODAL -->
-            <div id="resultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-                <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-indigo-500/30 text-center space-y-5 animate-fadeIn">
-                    
-                    <div id="resultIconBox" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                        <i class="fa-solid fa-trophy text-2xl text-white"></i>
+            <div id="resultModal" class="modal-overlay hidden">
+                <div class="glass-panel modal-box" style="border-color: rgba(16,185,129,0.4);">
+                    <div style="width: 56px; height: 56px; border-radius: 16px; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                        <svg class="svg-icon" style="width: 28px; height: 28px;" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2z"/></svg>
                     </div>
+                    <h3 style="font-size: 22px; font-weight: 900;">Sprint Completed!</h3>
+                    <p style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Outstanding mental speed!</p>
 
-                    <div>
-                        <h3 id="resultTitle" class="text-2xl font-black text-white">Sprint Completed!</h3>
-                        <p id="resultSubtitle" class="text-xs text-slate-400 mt-1">Outstanding mental speed!</p>
-                        <div id="newRecordBadge" class="hidden inline-block mt-2 px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold">
-                            <i class="fa-solid fa-crown mr-1"></i> New High Score!
-                        </div>
-                    </div>
-
-                    <!-- STATS SUMMARY GRID -->
-                    <div class="grid grid-cols-2 gap-3 bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-left">
+                    <div class="grid-2 font-mono" style="background: rgba(15,23,42,0.8); padding: 12px; border-radius: 16px; margin: 16px 0; text-align: left;">
                         <div>
-                            <span class="text-[10px] uppercase font-bold text-slate-500">Total Time</span>
-                            <div id="resTotalTime" class="text-lg font-black font-mono text-emerald-400">14.2s</div>
+                            <span style="font-size: 10px; color: #64748b; text-transform: uppercase;">Total Time</span>
+                            <div id="resTotalTime" style="font-size: 16px; font-weight: 900; color: #10b981;">14.2s</div>
                         </div>
                         <div>
-                            <span class="text-[10px] uppercase font-bold text-slate-500">Calculations</span>
-                            <div id="resCalcCount" class="text-lg font-black font-mono text-indigo-400">14 ops</div>
+                            <span style="font-size: 10px; color: #64748b; text-transform: uppercase;">Ops</span>
+                            <div id="resCalcCount" style="font-size: 16px; font-weight: 900; color: #818cf8;">14 ops</div>
                         </div>
-                        <div>
-                            <span class="text-[10px] uppercase font-bold text-slate-500">Avg Speed</span>
-                            <div id="resAvgSpeed" class="text-lg font-black font-mono text-amber-400">1.01s / op</div>
+                        <div style="margin-top: 8px;">
+                            <span style="font-size: 10px; color: #64748b; text-transform: uppercase;">Avg Speed</span>
+                            <div id="resAvgSpeed" style="font-size: 16px; font-weight: 900; color: #f59e0b;">1.01s</div>
                         </div>
-                        <div>
-                            <span class="text-[10px] uppercase font-bold text-slate-500">Max Streak</span>
-                            <div id="resMaxStreak" class="text-lg font-black font-mono text-violet-400">14</div>
+                        <div style="margin-top: 8px;">
+                            <span style="font-size: 10px; color: #64748b; text-transform: uppercase;">Max Streak</span>
+                            <div id="resMaxStreak" style="font-size: 16px; font-weight: 900; color: #c084fc;">14</div>
                         </div>
                     </div>
 
-                    <div class="flex space-x-3">
-                        <button id="resHomeBtn" class="w-1/2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-sm text-slate-200 transition">
-                            Menu
-                        </button>
-                        <button id="resRetryBtn" class="w-1/2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-sm text-white shadow-lg shadow-indigo-500/30 transition">
-                            Play Again
-                        </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="resHomeBtn" class="btn-icon" style="flex: 1; justify-content: center; padding: 10px;">Menu</button>
+                        <button id="resRetryBtn" class="btn-primary" style="flex: 1; padding: 10px; font-size: 14px;">Play Again</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- HELP MODAL -->
+            <div id="helpModal" class="modal-overlay hidden">
+                <div class="glass-panel modal-box" style="text-align: left;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="font-size: 16px; font-weight: 800;">How to Practice</h3>
+                        <button id="closeHelpBtn" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 18px;">✕</button>
+                    </div>
+
+                    <div style="font-size: 12px; color: #cbd5e1; display: flex; flex-direction: column; gap: 8px; line-height: 1.5;">
+                        <p style="background: rgba(15,23,42,0.6); padding: 8px; border-radius: 10px;">
+                            <strong>Addition Mode (0 → 100):</strong><br>
+                            Starts at 0. Enter current sum when adding single digits continuously until reaching ≥ 100.
+                        </p>
+                        <p style="background: rgba(15,23,42,0.6); padding: 8px; border-radius: 10px;">
+                            <strong>Subtraction Mode (100 → 0):</strong><br>
+                            Starts at 100. Subtract each random single digit until reaching ≤ 0.
+                        </p>
+                    </div>
+                    <button id="closeHelpConfirmBtn" class="btn-primary" style="margin-top: 12px; padding: 8px; font-size: 12px;">Got It!</button>
                 </div>
             </div>
 
             <!-- PAUSE MODAL -->
-            <div id="pauseModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-                <div class="glass-panel p-6 rounded-3xl max-w-sm w-full border border-slate-700 text-center space-y-4">
-                    <div class="w-12 h-12 rounded-xl bg-slate-800 mx-auto flex items-center justify-center text-indigo-400">
-                        <i class="fa-solid fa-pause text-xl"></i>
+            <div id="pauseModal" class="modal-overlay hidden">
+                <div class="glass-panel modal-box">
+                    <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Sprint Paused</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+                        <button id="resumeBtn" class="btn-primary" style="padding: 10px;">Resume</button>
+                        <button id="pauseQuitBtn" class="btn-icon" style="justify-content: center; padding: 8px;">Quit to Menu</button>
                     </div>
-                    <h3 class="text-xl font-bold text-white">Sprint Paused</h3>
-                    <p class="text-xs text-slate-400">Take a breath! Click resume when ready.</p>
-                    <div class="space-y-2 pt-2">
-                        <button id="resumeBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-500/30">
-                            Resume Sprint
-                        </button>
-                        <button id="pauseQuitBtn" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition">
-                            Quit to Menu
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- HELP / INSTRUCTIONS MODAL -->
-            <div id="helpModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-                <div class="glass-panel p-6 rounded-3xl max-w-md w-full border border-slate-700 text-left space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-extrabold text-lg text-white">How to Practice</h3>
-                        <button id="closeHelpBtn" class="p-1 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-                    </div>
-
-                    <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
-                        <p class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                            <strong>Addition Mode (0 &rarr; 100):</strong><br>
-                            Starts at origin 0. The app displays a random single digit (e.g. <code>Add 6</code>). Calculate the new sum in your head (0 + 6 = 6) and enter <code>6</code>. Next might be <code>Add 8</code>, so you enter <code>14</code>, and so on until total &ge; 100!
-                        </p>
-                        <p class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                            <strong>Subtraction Mode (100 &rarr; 0):</strong><br>
-                            Starts at origin 100. Subtract each random single digit (e.g. <code>Sub 4</code> &rarr; enter <code>96</code>) until you reach &le; 0.
-                        </p>
-                        <p class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                            <strong>Timer Rule:</strong><br>
-                            If the circular countdown depletes before you enter the correct sum, your progress resets back to origin! Stay fast and precise.
-                        </p>
-                    </div>
-                    <button id="closeHelpConfirmBtn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition">Got It!</button>
                 </div>
             </div>
 
         </main>
 
-        <!-- FOOTER BAR -->
-        <footer class="text-center text-[10px] sm:text-[11px] text-slate-500 py-1 shrink-0">
-            <p>Designed for Fast Mental Math Training &bull; Installable PWA</p>
+        <!-- FOOTER -->
+        <footer style="text-align: center; font-size: 11px; color: #475569; padding: 4px 0;">
+            Math Sprint &bull; 100% Offline Single-File App
         </footer>
     </div>
 
     <script>
+        // SAFE LOCALSTORAGE WRAPPERS
+        const storage = {
+            getItem(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    console.warn('LocalStorage unavailable offline:', e);
+                    return null;
+                }
+            },
+            setItem(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {
+                    console.warn('LocalStorage save failed:', e);
+                }
+            }
+        };
+
+        // INLINE SERVICE WORKER FOR OFFLINE CACHING
+        if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+            window.addEventListener('load', () => {
+                const swContent = `
+                    const CACHE_NAME = 'math-sprint-v1';
+                    self.addEventListener('install', (e) => {
+                        e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.add(location.href)));
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
+                    });
+                `;
+                const blob = new Blob([swContent], { type: 'application/javascript' });
+                const blobUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(blobUrl).catch(() => {});
+            });
+        }
+
         // APP STATE
         const state = {
-            mode: 'ADD', // 'ADD' or 'SUB'
+            mode: 'ADD',
             origin: 0,
             target: 100,
             currentTotal: 0,
             currentDigit: 0,
             expectedAnswer: 0,
-            speedLimitSec: 5, // 0 = zen (no timer)
+            speedLimitSec: 5,
             timerRemaining: 5,
             timerInterval: null,
             startTime: null,
@@ -569,24 +763,25 @@
             isPaused: false
         };
 
-        // SOUND SYNTHESIZER USING WEB AUDIO API
+        // WEB AUDIO SYNTHESIZER
         class AudioSynth {
-            constructor() {
-                this.ctx = null;
-            }
+            constructor() { this.ctx = null; }
             init() {
                 if (!this.ctx) {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    this.ctx = new AudioContext();
+                    try {
+                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                        if (AudioCtx) this.ctx = new AudioCtx();
+                    } catch (e) {
+                        console.warn('AudioContext not supported or restricted', e);
+                    }
                 }
             }
-            playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+            playTone(freq, type = 'sine', duration = 0.12, gainVal = 0.1) {
                 if (!state.soundEnabled) return;
                 try {
                     this.init();
-                    if (this.ctx.state === 'suspended') {
-                        this.ctx.resume();
-                    }
+                    if (!this.ctx) return;
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = type;
@@ -600,16 +795,14 @@
                 } catch (e) {}
             }
             playCorrect() {
-                const pitch = 440 + Math.min(state.streak * 30, 450);
-                this.playTone(pitch, 'triangle', 0.12, 0.12);
+                this.playTone(440 + Math.min(state.streak * 25, 400), 'triangle', 0.1, 0.12);
             }
             playWrong() {
-                this.playTone(160, 'sawtooth', 0.25, 0.18);
+                this.playTone(150, 'sawtooth', 0.2, 0.15);
             }
             playVictory() {
-                const notes = [523.25, 659.25, 783.99, 1046.50];
-                notes.forEach((n, idx) => {
-                    setTimeout(() => this.playTone(n, 'sine', 0.22, 0.15), idx * 90);
+                [523, 659, 783, 1046].forEach((n, i) => {
+                    setTimeout(() => this.playTone(n, 'sine', 0.2, 0.12), i * 80);
                 });
             }
         }
@@ -628,14 +821,13 @@
         resizeCanvas();
 
         class Particle {
-            constructor(x, y, color) {
+            constructor(x, y) {
                 this.x = x || Math.random() * canvas.width;
                 this.y = y || Math.random() * canvas.height;
                 this.vx = (Math.random() - 0.5) * 1.2;
                 this.vy = (Math.random() - 0.5) * 1.2;
                 this.radius = Math.random() * 2 + 1;
-                this.alpha = Math.random() * 0.5 + 0.2;
-                this.color = color || '#6366f1';
+                this.alpha = Math.random() * 0.4 + 0.1;
             }
             update() {
                 this.x += this.vx;
@@ -648,38 +840,17 @@
                 ctx.globalAlpha = this.alpha;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
+                ctx.fillStyle = '#6366f1';
                 ctx.fill();
                 ctx.restore();
             }
         }
 
-        // Generate initial background particles
-        for (let i = 0; i < 35; i++) {
-            particles.push(new Particle());
-        }
-
-        function spawnBurst(x, y, count = 20, color = '#10b981') {
-            for (let i = 0; i < count; i++) {
-                const p = new Particle(x, y, color);
-                p.vx = (Math.random() - 0.5) * 6;
-                p.vy = (Math.random() - 0.5) * 6;
-                p.radius = Math.random() * 3 + 2;
-                p.alpha = 1;
-                particles.push(p);
-            }
-        }
+        for (let i = 0; i < 30; i++) particles.push(new Particle());
 
         function animateCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p) => {
-                p.update();
-                p.draw();
-                if (particles.length > 35 && p.alpha > 0) {
-                    p.alpha -= 0.015;
-                }
-            });
-            particles = particles.filter(p => p.alpha > 0);
+            particles.forEach((p) => { p.update(); p.draw(); });
             requestAnimationFrame(animateCanvas);
         }
         animateCanvas();
@@ -700,9 +871,9 @@
 
         const currentTotalDisplay = document.getElementById('currentTotalDisplay');
         const taskSubheading = document.getElementById('taskSubheading');
-        
         const floatingStreakBadge = document.getElementById('floatingStreakBadge');
         const streakCount = document.getElementById('streakCount');
+        const negFixBadge = document.getElementById('negFixBadge');
 
         const calcInput = document.getElementById('calcInput');
         const answerForm = document.getElementById('answerForm');
@@ -716,76 +887,50 @@
         const numpadBtnText = document.getElementById('numpadBtnText');
         const virtualKeypad = document.getElementById('virtualKeypad');
 
-        // GAME OVER MODAL EVENT LISTENERS
-        document.getElementById('goResumeBtn').addEventListener('click', () => {
-            gameOverModal.classList.add('hidden');
-            state.isPlaying = true;
-            state.isPaused = false;
-            resetTimer();
-            focusInput();
-        });
-
-        document.getElementById('goRetryBtn').addEventListener('click', () => {
-            gameOverModal.classList.add('hidden');
-            startGame();
-        });
-
-        document.getElementById('goHomeBtn').addEventListener('click', () => {
-            gameOverModal.classList.add('hidden');
-            exitToMenu();
-        });
-
-        // MODE SELECTION HANDLERS
+        // MODE SELECTION
         selectAddMode.addEventListener('click', () => setMode('ADD'));
         selectSubMode.addEventListener('click', () => setMode('SUB'));
 
         function setMode(m) {
             state.mode = m;
             if (m === 'ADD') {
-                selectAddMode.classList.add('border-indigo-500', 'glow-indigo');
-                selectSubMode.classList.remove('border-rose-500', 'glow-rose');
+                selectAddMode.className = 'mode-card active-add';
+                selectSubMode.className = 'mode-card';
                 modeBadge.textContent = 'Addition Sprint';
-                modeBadge.className = 'text-xs text-indigo-400 font-medium';
+                modeBadge.style.color = '#818cf8';
             } else {
-                selectSubMode.classList.add('border-rose-500', 'glow-rose');
-                selectAddMode.classList.remove('border-indigo-500', 'glow-indigo');
+                selectSubMode.className = 'mode-card active-sub';
+                selectAddMode.className = 'mode-card';
                 modeBadge.textContent = 'Subtraction Sprint';
-                modeBadge.className = 'text-xs text-rose-400 font-medium';
+                modeBadge.style.color = '#f43f5e';
             }
             loadBestStats();
         }
 
-        // SPEED BUTTONS
+        // SPEED CONTROLS
         document.querySelectorAll('.speed-opt').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.speed-opt').forEach(b => {
-                    b.className = 'speed-opt py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition';
-                });
-                btn.className = 'speed-opt py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow';
+                document.querySelectorAll('.speed-opt').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
                 state.speedLimitSec = parseFloat(btn.getAttribute('data-speed'));
                 document.getElementById('speedLabel').textContent = btn.getAttribute('data-label');
                 loadBestStats();
             });
         });
 
-        // SOUND TOGGLE
-        const soundBtn = document.getElementById('soundBtn');
-        const soundIcon = document.getElementById('soundIcon');
-        soundBtn.addEventListener('click', toggleSound);
-
-        function toggleSound() {
+        // AUDIO TOGGLE
+        document.getElementById('soundBtn').addEventListener('click', () => {
             state.soundEnabled = !state.soundEnabled;
-            soundIcon.className = state.soundEnabled ? 'fa-solid fa-volume-high text-sm' : 'fa-solid fa-volume-xmark text-sm text-slate-500';
-        }
+            document.getElementById('soundBtn').style.opacity = state.soundEnabled ? '1' : '0.4';
+        });
 
         // HELP MODAL
         document.getElementById('helpBtn').addEventListener('click', () => helpModal.classList.remove('hidden'));
         document.getElementById('closeHelpBtn').addEventListener('click', () => helpModal.classList.add('hidden'));
         document.getElementById('closeHelpConfirmBtn').addEventListener('click', () => helpModal.classList.add('hidden'));
 
-        // PAUSE HANDLERS
-        const pauseBtn = document.getElementById('pauseBtn');
-        if (pauseBtn) pauseBtn.addEventListener('click', togglePause);
+        // PAUSE LOGIC
+        document.getElementById('pauseBtn').addEventListener('click', togglePause);
         document.getElementById('resumeBtn').addEventListener('click', togglePause);
         document.getElementById('pauseQuitBtn').addEventListener('click', () => {
             pauseModal.classList.add('hidden');
@@ -797,33 +942,32 @@
             state.isPaused = !state.isPaused;
             if (state.isPaused) {
                 clearInterval(state.timerInterval);
-                state.pauseStartTime = Date.now();
                 pauseModal.classList.remove('hidden');
             } else {
-                state.elapsedPausedMs += (Date.now() - state.pauseStartTime);
                 pauseModal.classList.add('hidden');
                 resetTimer();
                 focusInput();
             }
         }
 
-        // ON-DEMAND NUMPAD TOGGLE
+        // NUMPAD TOGGLE
         toggleNumpadBtn.addEventListener('click', () => {
             const isHidden = virtualKeypad.classList.contains('hidden');
             if (isHidden) {
                 virtualKeypad.classList.remove('hidden');
-                numpadBtnText.textContent = 'Hide On-Screen Numpad';
+                numpadBtnText.textContent = 'Hide Numpad';
             } else {
                 virtualKeypad.classList.add('hidden');
-                numpadBtnText.textContent = 'Show On-Screen Numpad';
+                numpadBtnText.textContent = 'Show Numpad';
             }
             focusInput();
         });
 
-        // START GAME SPRINT
+        // START GAME
         startSprintBtn.addEventListener('click', startGame);
 
         function startGame() {
+            audio.init();
             startView.classList.add('hidden');
             gameView.classList.remove('hidden');
             resultModal.classList.add('hidden');
@@ -835,17 +979,12 @@
             state.opCount = 0;
             state.streak = 0;
             state.maxStreak = 0;
-            state.elapsedPausedMs = 0;
             state.startTime = Date.now();
 
             if (state.mode === 'ADD') {
-                state.origin = 0;
-                state.target = 100;
-                state.currentTotal = 0;
+                state.origin = 0; state.target = 100; state.currentTotal = 0;
             } else {
-                state.origin = 100;
-                state.target = 0;
-                state.currentTotal = 100;
+                state.origin = 100; state.target = 0; state.currentTotal = 100;
             }
 
             updateStreakUI();
@@ -853,27 +992,40 @@
             focusInput();
         }
 
-        // GENERATE NEXT SINGLE DIGIT TASK
         function nextTask() {
             state.currentDigit = Math.floor(Math.random() * 10);
 
             if (state.mode === 'ADD') {
                 state.expectedAnswer = state.currentTotal + state.currentDigit;
                 taskSubheading.textContent = `ADD ${state.currentDigit}`;
-                taskSubheading.className = 'text-lg sm:text-2xl font-black text-indigo-300 font-mono tracking-wide';
+                taskSubheading.style.color = '#a5b4fc';
+                negFixBadge.classList.add('hidden');
             } else {
-                state.expectedAnswer = state.currentTotal - state.currentDigit;
+                // Dynamic check: Does current subtraction result in a negative number?
+                const subResult = state.currentTotal - state.currentDigit;
+                if (subResult < 0) {
+                    state.expectedAnswer = 0;
+                    negFixBadge.classList.remove('hidden');
+                } else {
+                    state.expectedAnswer = subResult;
+                    negFixBadge.classList.add('hidden');
+                }
                 taskSubheading.textContent = `SUB ${state.currentDigit}`;
-                taskSubheading.className = 'text-lg sm:text-2xl font-black text-rose-300 font-mono tracking-wide';
+                taskSubheading.style.color = '#fca5a5';
             }
 
             currentTotalDisplay.textContent = state.currentTotal;
-
             calcInput.value = '';
             resetTimer();
         }
 
-        // TIMER LOGIC & CIRCULAR PROGRESS
+        // Auto-fill button click for negative subtraction results
+        negFixBadge.addEventListener('click', () => {
+            if (!state.isPlaying || state.isPaused) return;
+            calcInput.value = '0';
+            checkAnswer();
+        });
+
         function resetTimer() {
             clearInterval(state.timerInterval);
             if (state.speedLimitSec === 0 || state.isPaused) {
@@ -884,72 +1036,72 @@
             state.timerRemaining = state.speedLimitSec;
             updateTimerUI();
 
-            const intervalMs = 50;
             state.timerInterval = setInterval(() => {
-                state.timerRemaining -= (intervalMs / 1000);
+                state.timerRemaining -= 0.05;
                 if (state.timerRemaining <= 0) {
                     state.timerRemaining = 0;
                     updateTimerUI();
                     clearInterval(state.timerInterval);
-                    handleTimeoutReset();
+                    handleTimeout();
                 } else {
                     updateTimerUI();
                 }
-            }, intervalMs);
+            }, 50);
         }
 
         function updateTimerUI() {
             if (state.speedLimitSec === 0) return;
             const pct = (state.timerRemaining / state.speedLimitSec) * 100;
-            const strokeDash = `${pct}, 100`;
-            timerCircle.setAttribute('stroke-dasharray', strokeDash);
+            timerCircle.setAttribute('stroke-dasharray', `${pct}, 100`);
             timerText.textContent = state.timerRemaining.toFixed(1);
 
-            if (pct < 30) {
-                timerCircle.setAttribute('class', 'timer-circle text-rose-500');
-            } else if (pct < 60) {
-                timerCircle.setAttribute('class', 'timer-circle text-amber-400');
-            } else {
-                timerCircle.setAttribute('class', 'timer-circle text-indigo-500');
-            }
+            if (pct < 30) timerCircle.setAttribute('stroke', '#f43f5e');
+            else if (pct < 60) timerCircle.setAttribute('stroke', '#f59e0b');
+            else timerCircle.setAttribute('stroke', '#6366f1');
         }
 
-        // TIMEOUT GAME OVER SCREEN
-        function handleTimeoutReset() {
+        function handleTimeout() {
             audio.playWrong();
             state.isPlaying = false;
-            mainDisplayCard.classList.add('animate-shake', 'border-rose-500');
-            
+            mainDisplayCard.classList.add('animate-shake');
             setTimeout(() => {
-                mainDisplayCard.classList.remove('animate-shake', 'border-rose-500');
+                mainDisplayCard.classList.remove('animate-shake');
                 gameOverModal.classList.remove('hidden');
             }, 350);
         }
 
-        // ANSWER CHECK ENGINE
+        // GAME OVER MODAL HANDLERS
+        document.getElementById('goResumeBtn').addEventListener('click', () => {
+            gameOverModal.classList.add('hidden');
+            state.isPlaying = true;
+            resetTimer();
+            focusInput();
+        });
+        document.getElementById('goRetryBtn').addEventListener('click', () => {
+            gameOverModal.classList.add('hidden');
+            startGame();
+        });
+        document.getElementById('goHomeBtn').addEventListener('click', () => {
+            gameOverModal.classList.add('hidden');
+            exitToMenu();
+        });
+
         function checkAnswer() {
             if (!state.isPlaying || state.isPaused) return;
             const val = parseInt(calcInput.value, 10);
             if (isNaN(val)) return;
 
             if (val === state.expectedAnswer) {
-                // CORRECT
                 audio.playCorrect();
                 state.opCount++;
                 state.streak++;
                 if (state.streak > state.maxStreak) state.maxStreak = state.streak;
                 updateStreakUI();
 
-                // Particle burst
-                const rect = calcInput.getBoundingClientRect();
-                spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 12, '#10b981');
-
                 state.currentTotal = state.expectedAnswer;
 
-                // WIN CONDITION CHECK
-                if (state.mode === 'ADD' && state.currentTotal >= state.target) {
-                    finishGame();
-                } else if (state.mode === 'SUB' && state.currentTotal <= state.target) {
+                if ((state.mode === 'ADD' && state.currentTotal >= state.target) ||
+                    (state.mode === 'SUB' && state.currentTotal <= state.target)) {
                     finishGame();
                 } else {
                     nextTask();
@@ -957,26 +1109,20 @@
             }
         }
 
-        // Auto-check on keystroke if character length matches
         calcInput.addEventListener('input', () => {
             const valStr = calcInput.value.trim();
             const expectedStr = state.expectedAnswer.toString();
-
-            if (valStr.length >= expectedStr.length) {
-                if (parseInt(valStr, 10) === state.expectedAnswer) {
-                    checkAnswer();
-                }
+            if (valStr.length >= expectedStr.length && parseInt(valStr, 10) === state.expectedAnswer) {
+                checkAnswer();
             }
         });
 
-        // Form submit listener
         answerForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const val = parseInt(calcInput.value, 10);
             if (!isNaN(val)) {
-                if (val === state.expectedAnswer) {
-                    checkAnswer();
-                } else {
+                if (val === state.expectedAnswer) checkAnswer();
+                else {
                     audio.playWrong();
                     mainDisplayCard.classList.add('animate-shake');
                     setTimeout(() => mainDisplayCard.classList.remove('animate-shake'), 350);
@@ -985,21 +1131,18 @@
             }
         });
 
-        // VIRTUAL NUMPAD HANDLERS
+        // VIRTUAL NUMPAD LOGIC
         document.querySelectorAll('.num-key').forEach(key => {
             key.addEventListener('click', () => {
                 if (!state.isPlaying || state.isPaused) return;
-                const num = key.getAttribute('data-val');
-                calcInput.value += num;
+                calcInput.value += key.getAttribute('data-val');
                 calcInput.dispatchEvent(new Event('input'));
             });
         });
-
         document.getElementById('keyClear').addEventListener('click', () => {
             calcInput.value = '';
             calcInput.focus();
         });
-
         document.getElementById('keyBackspace').addEventListener('click', () => {
             calcInput.value = calcInput.value.slice(0, -1);
             calcInput.dispatchEvent(new Event('input'));
@@ -1015,37 +1158,23 @@
         }
 
         function focusInput() {
-            setTimeout(() => {
-                calcInput.focus();
-            }, 100);
+            setTimeout(() => calcInput.focus(), 100);
         }
 
-        // FINISH GAME & RESULTS
         function finishGame() {
             clearInterval(state.timerInterval);
             state.isPlaying = false;
 
-            const actualDurationMs = Date.now() - state.startTime - state.elapsedPausedMs;
-            const totalTimeSec = (actualDurationMs / 1000).toFixed(1);
+            const totalTimeSec = ((Date.now() - state.startTime) / 1000).toFixed(1);
             const avgSpeed = (totalTimeSec / Math.max(state.opCount, 1)).toFixed(2);
 
             document.getElementById('resTotalTime').textContent = `${totalTimeSec}s`;
             document.getElementById('resCalcCount').textContent = `${state.opCount} ops`;
-            document.getElementById('resAvgSpeed').textContent = `${avgSpeed}s / op`;
+            document.getElementById('resAvgSpeed').textContent = `${avgSpeed}s`;
             document.getElementById('resMaxStreak').textContent = state.maxStreak;
 
             audio.playVictory();
-            spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 60, '#6366f1');
-
-            // Save Highscores
-            const isNewBest = saveBestTime(state.mode, state.speedLimitSec, parseFloat(totalTimeSec));
-            const newRecordBadge = document.getElementById('newRecordBadge');
-            if (isNewBest) {
-                newRecordBadge.classList.remove('hidden');
-            } else {
-                newRecordBadge.classList.add('hidden');
-            }
-
+            saveBestTime(state.mode, state.speedLimitSec, parseFloat(totalTimeSec));
             resultModal.classList.remove('hidden');
         }
 
@@ -1055,28 +1184,22 @@
 
         function saveBestTime(mode, speed, timeSec) {
             const key = getStorageKey(mode, speed);
-            const prev = localStorage.getItem(key);
+            const prev = storage.getItem(key);
             if (!prev || timeSec < parseFloat(prev)) {
-                localStorage.setItem(key, timeSec);
-                loadBestStats();
-                return true;
+                storage.setItem(key, timeSec);
             }
             loadBestStats();
-            return false;
         }
 
         function loadBestStats() {
-            const keyAdd = getStorageKey('ADD', state.speedLimitSec);
-            const keySub = getStorageKey('SUB', state.speedLimitSec);
-            const bestAdd = localStorage.getItem(keyAdd);
-            const bestSub = localStorage.getItem('math_sprint_best_sub_speed_' + state.speedLimitSec);
+            const bestAdd = storage.getItem(getStorageKey('ADD', state.speedLimitSec));
+            const bestSub = storage.getItem(getStorageKey('SUB', state.speedLimitSec));
 
             document.getElementById('bestAddStats').textContent = bestAdd ? `${bestAdd}s` : '--';
             document.getElementById('bestSubStats').textContent = bestSub ? `${bestSub}s` : '--';
         }
         loadBestStats();
 
-        // QUIT / BACK TO MENU
         function exitToMenu() {
             clearInterval(state.timerInterval);
             state.isPlaying = false;
@@ -1087,36 +1210,22 @@
         }
 
         backToMenuBtn.addEventListener('click', exitToMenu);
-
-        // MODAL RETRY & HOME BUTTONS
         document.getElementById('resRetryBtn').addEventListener('click', () => {
             resultModal.classList.add('hidden');
             startGame();
         });
-
         document.getElementById('resHomeBtn').addEventListener('click', () => {
             resultModal.classList.add('hidden');
             exitToMenu();
         });
 
-        // GLOBAL KEYBOARD SHORTCUTS
         window.addEventListener('keydown', (e) => {
-            if (e.key === 'm' || e.key === 'M') {
-                toggleSound();
-            }
             if (state.isPlaying) {
-                if (e.key === 'Escape') {
-                    exitToMenu();
-                } else if (e.key === 'p' || e.key === 'P') {
-                    togglePause();
-                } else if (e.key === 'r' || e.key === 'R') {
-                    startGame();
-                }
+                if (e.key === 'Escape') exitToMenu();
+                else if (e.key === 'p' || e.key === 'P') togglePause();
+                else if (e.key === 'r' || e.key === 'R') startGame();
             }
         });
-
-        // KEEP INPUT FOCUSED ON CLICKING MAIN DISPLAY
-        mainDisplayCard.addEventListener('click', focusInput);
     </script>
 </body>
 </html>
